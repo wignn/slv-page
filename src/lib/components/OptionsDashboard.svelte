@@ -53,8 +53,10 @@
 			snapshot = Array.isArray(summaryJson?.data)
 				? (summaryJson.data[0] ?? null)
 				: (summaryJson?.data ?? null);
-			chain = Array.isArray(chainJson?.data) ? chainJson.data : [];
-			gex = Array.isArray(gexJson?.data) ? gexJson.data : [];
+			const chainData = chainJson?.data?.chain ?? chainJson?.data?.contracts ?? chainJson?.data ?? chainJson;
+				chain = Array.isArray(chainData) ? chainData : [];
+			const gexData = gexJson?.data?.items ?? gexJson?.data?.gex ?? gexJson?.data?.strikes ?? gexJson?.data ?? gexJson;
+				gex = Array.isArray(gexData) ? gexData : [];
 		} catch (err: unknown) {
 			if (currentId === requestId) {
 				error = err instanceof Error ? err.message : 'An error occurred fetching options data';
@@ -135,7 +137,7 @@
 			<OptionsSummaryCards {snapshot} />
 
 			<!-- GEX Chart -->
-			<OptionsGexChart gexItems={gex} underlyingPrice={snapshot?.underlying_price} />
+			<OptionsGexChart gexItems={gex} contracts={chain} underlyingPrice={snapshot?.underlying_price} />
 
 			<!-- Options Chain Table -->
 			<OptionChainTable contracts={chain} underlyingPrice={snapshot?.underlying_price} />

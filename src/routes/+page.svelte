@@ -30,11 +30,6 @@
 
 	let isDarkTheme = $state(false);
 
-	// Mockup message timing states to create sequential incoming message effect
-	let msg1Visible = $state(false);
-	let msg2Visible = $state(false);
-	let msg3Visible = $state(false);
-
 	onMount(() => {
 		if (typeof window !== 'undefined') {
 			const storedTheme = localStorage.getItem('theme');
@@ -50,11 +45,6 @@
 		startWebSocket();
 		startNewsPolling(60_000);
 		startCalendarPolling(300_000);
-
-		// Setup Discord mockup animation sequence
-		setTimeout(() => (msg1Visible = true), 500);
-		setTimeout(() => (msg2Visible = true), 1800);
-		setTimeout(() => (msg3Visible = true), 3400);
 	});
 
 	onDestroy(() => {
@@ -77,36 +67,44 @@
 
 <div class="min-h-screen bg-bg text-text">
 	<header
-		class="sticky top-0 z-50 flex h-[52px] shrink-0 items-center justify-between border-b border-border bg-surface/80 px-4 shadow-sm backdrop-blur-md"
+		class="sticky top-0 z-50 flex h-16 shrink-0 items-center justify-between border-b border-border bg-surface/90 px-4 shadow-sm backdrop-blur-xl md:px-6"
 	>
-		<div class="flex items-center gap-6">
-			<a href={resolve('/')} class="group flex items-center gap-2">
-				<div
-					class="flex h-8 w-8 items-center justify-center rounded bg-accent/10 transition-colors group-hover:bg-accent/20"
-				>
-					<img src={logoUrl} alt="Winyx" class="h-6 w-6 object-contain" />
+		<div class="flex items-center">
+			<a href={resolve('/')} class="group flex items-center gap-3" aria-label="SLV Home">
+				<img
+					src={logoUrl}
+					alt="SLV"
+					class="h-11 w-11 shrink-0 object-contain transition-transform duration-300 group-hover:scale-105 md:h-12 md:w-12"
+				/>
+
+				<div class="flex flex-col leading-none">
+					<span class="text-[17px] font-black tracking-[-0.03em] text-text">SLV</span>
+					<span class="mt-1 hidden text-[9px] font-semibold tracking-[0.18em] text-text-dim uppercase sm:block">
+						Market Intelligence
+					</span>
 				</div>
-				<span class="text-lg font-bold tracking-tight">Winyx</span>
 			</a>
 		</div>
 
-		<div class="flex items-center gap-4">
+		<div class="flex items-center gap-2 sm:gap-4">
 			<div class="hidden items-center gap-3 border-r border-border pr-4 text-xs md:flex">
 				<div class="flex items-center gap-1.5">
 					<span
 						class="inline-block h-2 w-2 rounded-full {marketStore.connected
 							? 'bg-green'
-							: 'bg-red'} flash-green"
+							: 'bg-red'}"
 					></span>
-					<span class="text-text-muted">{marketStore.connected ? 'Connected' : 'Disconnected'}</span
-					>
+					<span class="text-text-muted">
+						{marketStore.connected ? 'Connected' : 'Disconnected'}
+					</span>
 				</div>
 			</div>
 
 			<button
-				class="rounded-full p-1.5 text-text-dim transition-colors hover:bg-surface-2 hover:text-text"
+				class="rounded-full p-2 text-text-dim transition-colors hover:bg-surface-2 hover:text-text"
 				onclick={toggleTheme}
-				title="Toggle theme"
+				title={isDarkTheme ? 'Switch to light mode' : 'Switch to dark mode'}
+				aria-label={isDarkTheme ? 'Switch to light mode' : 'Switch to dark mode'}
 			>
 				{#if isDarkTheme}
 					<Sun class="h-5 w-5" />
@@ -114,24 +112,22 @@
 					<Moon class="h-5 w-5" />
 				{/if}
 			</button>
+
 			<a
 				href={resolve('/docs')}
-				class="text-sm font-medium text-text-muted transition-colors hover:text-text">Docs</a
+				class="hidden text-sm font-medium text-text-muted transition-colors hover:text-text sm:block"
 			>
-			
+				Docs
+			</a>
+
 			<a
 				href="https://github.com/wignn/atlsd"
 				data-sveltekit-reload
 				target="_blank"
 				rel="noopener noreferrer"
-				class="hidden items-center gap-1.5 rounded-full border border-border bg-surface-2/60 px-3 py-1.5 text-xs font-semibold text-text-muted shadow-sm transition-all hover:border-text-dim/30 hover:bg-border/30 hover:text-text sm:flex"
+				class="hidden items-center gap-1.5 rounded-full border border-border bg-surface-2/60 px-3 py-1.5 text-xs font-semibold text-text-muted shadow-sm transition-all hover:border-text-dim/30 hover:bg-border/30 hover:text-text md:flex"
 			>
-				<svg
-					class="h-3.5 w-3.5"
-					viewBox="0 0 24 24"
-					fill="currentColor"
-					xmlns="http://www.w3.org/2000/svg"
-				>
+				<svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
 					<path
 						fill-rule="evenodd"
 						clip-rule="evenodd"
@@ -145,14 +141,15 @@
 				href={DISCORD_INVITE}
 				data-sveltekit-reload
 				target="_blank"
-				class="rounded-md bg-accent px-4 py-1.5 text-sm font-semibold text-white shadow-[0_0_15px_rgba(41,98,255,0.3)] transition-all hover:bg-accent-glow hover:shadow-[0_0_25px_rgba(41,98,255,0.5)] active:scale-95"
+				rel="noopener noreferrer"
+				class="rounded-md bg-accent px-3 py-2 text-xs font-semibold text-white shadow-[0_0_15px_rgba(41,98,255,0.25)] transition-all hover:bg-accent-glow hover:shadow-[0_0_25px_rgba(41,98,255,0.4)] active:scale-95 sm:px-4 sm:text-sm"
 			>
 				Discord
 			</a>
 		</div>
 	</header>
 
-	<div class="relative sticky top-[52px] z-40">
+	<div class="relative sticky top-16 z-40">
 		<TickerStrip />
 		<!-- Edge masks for smooth scrolling fade out -->
 		<div
@@ -163,309 +160,161 @@
 		></div>
 	</div>
 
-	<!-- Hero Section: Occupies 100vh minus the height of header (52px) and ticker (32px) -->
+	<!-- SLV Hero -->
 	<section
-		class="relative flex min-h-[calc(100vh-84px)] flex-col justify-between overflow-hidden bg-bg px-4 py-8 md:px-8 lg:px-16 lg:py-16"
+		class="relative min-h-[calc(100vh-96px)] overflow-hidden bg-bg text-text transition-colors duration-300"
 	>
-		<!-- Background grids and ambient glow effects -->
+		<!-- Warm ambient glow that follows the logo palette -->
 		<div
-			class="absolute inset-0 bg-[linear-gradient(to_right,var(--color-border)_1px,transparent_1px),linear-gradient(to_bottom,var(--color-border)_1px,transparent_1px)] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_40%,#000_70%,transparent_100%)] bg-[size:4rem_4rem] opacity-20 transition-opacity duration-1000"
+			class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_72%_44%,rgba(255,190,40,0.16)_0%,rgba(255,190,40,0.07)_22%,transparent_50%)] dark:bg-[radial-gradient(circle_at_72%_44%,rgba(255,179,0,0.13)_0%,rgba(255,179,0,0.05)_24%,transparent_52%)]"
+		></div>
+
+		<!-- Subtle grid -->
+		<div
+			class="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#000_1px,transparent_1px),linear-gradient(to_bottom,#000_1px,transparent_1px)] bg-[size:64px_64px] opacity-[0.028] dark:bg-[linear-gradient(to_right,#fff_1px,transparent_1px),linear-gradient(to_bottom,#fff_1px,transparent_1px)] dark:opacity-[0.035]"
 		></div>
 
 		<div
-			class="pointer-events-none absolute top-1/4 left-1/4 -z-10 h-72 w-72 animate-[glow-pulse_8s_infinite] rounded-full bg-accent/10 mix-blend-screen blur-[100px] dark:mix-blend-lighten"
-		></div>
-		<div
-			class="pointer-events-none absolute right-1/4 bottom-1/4 -z-10 h-72 w-72 animate-[glow-pulse_8s_infinite_2s] rounded-full bg-blue-500/10 mix-blend-screen blur-[100px] dark:mix-blend-lighten"
-		></div>
-
-		<div class="relative mx-auto flex w-full max-w-7xl flex-1 flex-col justify-center">
-			<div class="grid items-center gap-12 lg:grid-cols-12 lg:gap-8">
-				<!-- Left Column: Title & CTA -->
+			class="relative z-10 mx-auto grid min-h-[calc(100vh-96px)] w-full max-w-[1450px] grid-cols-1 items-center px-6 py-16 lg:grid-cols-[0.9fr_1.1fr] lg:px-16 xl:px-20"
+		>
+			<!-- Left -->
+			<div class="relative z-20 flex flex-col items-start">
 				<div
-					class="flex flex-col items-center text-center lg:col-span-7 lg:items-start lg:text-left"
+					class="mb-7 flex items-center gap-3 font-mono text-[10px] font-medium tracking-[0.24em] text-text-dim"
 				>
-					<!-- Visual Badge -->
-					<div
-						class="animate-fade-in-up mb-6 inline-flex cursor-default items-center gap-2 rounded-full border border-accent/20 bg-accent/5 px-3.5 py-1.5 text-xs font-semibold text-accent opacity-0 shadow-sm transition-all hover:border-accent/30 hover:bg-accent/10"
+					<span>OPEN SOURCE</span>
+					<span class="h-[3px] w-[3px] rounded-full bg-current"></span>
+					<span>MARKET INTELLIGENCE</span>
+				</div>
+
+				<h1
+					class="m-0 font-[Georgia,'Times_New_Roman',serif] text-[clamp(52px,6.4vw,108px)] font-normal leading-[0.82] tracking-[-0.07em] text-text"
+				>
+					<span class="block lg:whitespace-nowrap">THE MARKET</span>
+					<span class="block lg:whitespace-nowrap">THAT MOVES</span>
+					<span class="block lg:whitespace-nowrap">WITH YOU</span>
+				</h1>
+
+				<p class="mt-7 max-w-[520px] text-sm leading-7 text-text-muted sm:text-base">
+					Live forex, crypto, global news, economic events, sentiment, and volatility — built into
+					one real-time market intelligence system.
+				</p>
+
+				<div class="mt-10">
+					<p
+						class="mb-4 font-mono text-[10px] font-medium tracking-[0.22em] text-text-dim"
+					>
+						LIVE INTELLIGENCE SYSTEM
+					</p>
+
+					<a
+						href="#market"
+						class="group inline-flex items-center gap-3 bg-text px-6 py-4 font-mono text-[11px] font-bold tracking-[0.13em] text-bg shadow-[0_10px_30px_rgba(0,0,0,0.12)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_15px_35px_rgba(0,0,0,0.18)]"
 					>
 						<span class="relative flex h-2 w-2">
-							<span
-								class="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75"
-							></span>
-							<span class="relative inline-flex h-2 w-2 rounded-full bg-accent"></span>
+							<span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-60"></span>
+							<span class="relative inline-flex h-2 w-2 rounded-full bg-amber-400"></span>
 						</span>
-						Real-Time Discord Ingestion
-					</div>
+						EXPLORE LIVE MARKET
+						<span class="ml-1 transition-transform duration-200 group-hover:translate-x-1">→</span>
+					</a>
+				</div>
 
-					<h1
-						class="animate-fade-in-up max-w-xl text-5xl leading-[1.05] font-black tracking-tight text-text opacity-0 delay-100 sm:text-6xl md:text-7xl"
-					>
-						Real-time Market
-						<span
-							class="bg-gradient-to-br from-accent via-blue-500 to-indigo-400 bg-clip-text text-transparent drop-shadow-sm"
-							>Intelligence</span
-						>
-					</h1>
-
-					<p
-						class="animate-fade-in-up mt-6 max-w-lg text-base leading-relaxed font-medium text-text-muted opacity-0 delay-200 sm:text-lg"
-					>
-						Live forex & crypto prices, breaking news, economic calendar, and volatility detection —
-						streamed directly to your Discord server.
+				<div class="mt-9 w-full max-w-[500px]">
+					<p class="mb-3 font-mono text-[10px] tracking-[0.22em] text-text-dim">
+						SYSTEM STATUS
 					</p>
 
 					<div
-						class="animate-fade-in-up mt-8 flex w-full flex-col items-center gap-4 opacity-0 delay-300 sm:w-auto sm:flex-row"
+						class="overflow-hidden rounded-xl border border-border bg-surface text-text shadow-sm"
 					>
-						
-						<a
-							href={DISCORD_INVITE}
-							data-sveltekit-reload
-							target="_blank"
-							rel="noopener noreferrer"
-							class="group inline-flex w-full items-center justify-center gap-2 rounded-xl bg-accent px-6 py-3.5 text-sm font-bold text-white shadow-[0_4px_14px_0_rgba(41,98,255,0.39)] transition-all hover:-translate-y-0.5 hover:bg-accent-glow hover:shadow-[0_6px_20px_rgba(41,98,255,0.4)] active:translate-y-0 sm:w-auto"
-						>
-							<svg
-								class="h-5 w-5 transition-transform group-hover:scale-110"
-								viewBox="0 0 24 24"
-								fill="currentColor"
-							>
-								<path
-									d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"
-								/>
-							</svg>
-							Add to Discord
-						</a>
-						<a
-							href="#market" /* svelte-ignore no-navigation-without-resolve */
-							class="inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-border/80 bg-surface/50 px-6 py-3.5 text-sm font-bold text-text shadow-sm backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:bg-surface-2 hover:text-text hover:shadow sm:w-auto"
-						>
-							View Live Data
-							<svg
-								class="h-4 w-4 text-text-dim"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-								stroke-width="2"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									d="M19 14l-7 7m0 0l-7-7m7 7V3"
-								/>
-							</svg>
-						</a>
-					</div>
-				</div>
-
-				<!-- Right Column: Discord/Alert Mockup Widget -->
-				<div
-					class="animate-fade-in-up perspective-1000 hidden min-w-0 flex-col opacity-0 delay-400 lg:col-span-5 lg:flex"
-				>
-					<div
-						class="relative mx-auto flex w-full max-w-[440px] animate-[float_6s_ease-in-out_infinite] flex-col gap-4 overflow-hidden rounded-2xl border border-border/80 bg-surface/60 p-5 font-sans shadow-2xl backdrop-blur-xl transition-transform duration-700 select-none hover:-rotate-x-2 hover:rotate-y-2"
-					>
-						<!-- Glow Top Right -->
 						<div
-							class="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-accent/20 blur-2xl"
-						></div>
-						<div
-							class="absolute -bottom-10 -left-10 h-32 w-32 rounded-full bg-blue-500/10 blur-2xl"
-						></div>
-
-						<!-- Discord Channel Header Mockup -->
-						<div
-							class="relative z-10 flex items-center justify-between border-b border-border/50 pb-3"
+							class="flex min-h-[35px] items-center gap-4 border-b border-border px-4 font-mono text-[8px] font-semibold tracking-[0.04em]"
 						>
-							<div class="flex items-center gap-2.5">
-								<span class="text-xl font-light text-text-dim">#</span>
-								<span class="text-sm font-bold tracking-wide text-text">fio-market-alerts</span>
-							</div>
-							<div
-								class="flex items-center gap-1.5 rounded-full border border-border/50 bg-surface-2/80 px-2 py-1"
-							>
-								<span class="h-1.5 w-1.5 animate-pulse rounded-full bg-green"></span>
-								<span
-									class="font-mono text-[10px] font-bold tracking-wider text-text-muted uppercase"
-									>Live Stream</span
-								>
-							</div>
+							<span class="text-text">LIVE</span>
+							<span class="opacity-35">FOREX</span>
+							<span class="opacity-35">CRYPTO</span>
+							<span class="opacity-35">NEWS</span>
 						</div>
 
-						<!-- Mock Messages -->
-						<div
-							class="relative z-10 flex max-h-[340px] flex-col gap-4 overflow-hidden pb-2 text-xs"
-						>
-							<!-- Alert 1: Volatility -->
-							{#if msg1Visible}
-								<div
-									class="flex animate-[message-pop_0.4s_cubic-bezier(0.175,0.885,0.32,1.275)_forwards] items-start gap-3"
-								>
-									<div
-										class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent to-blue-600 text-xs font-black text-white shadow-md"
-									>
-										F
-									</div>
-									<div class="flex min-w-0 flex-1 flex-col">
-										<div class="flex items-center gap-2">
-											<span
-												class="cursor-pointer text-xs leading-none font-bold text-text hover:underline"
-												>Winyx Bot</span
-											>
-											<span
-												class="flex items-center gap-0.5 rounded bg-accent/15 px-1.5 py-0.5 text-[9px] leading-none font-black text-accent uppercase"
-											>
-												<svg class="h-2.5 w-2.5" fill="currentColor" viewBox="0 0 24 24"
-													><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></svg
-												>
-												Bot
-											</span>
-											<span
-												class="cursor-pointer text-[10px] font-medium text-text-dim hover:underline"
-												>Just now</span
-											>
-										</div>
-										<div
-											class="group mt-1.5 rounded-md border-l-[3px] border-amber bg-surface-2/80 p-3 text-text-muted shadow-sm backdrop-blur-sm transition-all hover:bg-surface-2"
-										>
-											<span class="flex items-center gap-1.5 font-bold text-text">
-												⚠️ Volatility Spike Detected
-											</span>
-											<div class="mt-1.5 font-mono text-[11px] leading-relaxed">
-												<span class="font-bold text-text">EURUSD</span> jumped
-												<span class="rounded bg-green/10 px-1 font-bold text-green">+0.32%</span>
-												in 2 mins.<br />Current: <span class="font-bold text-text">1.09241</span>
-											</div>
-										</div>
-									</div>
-								</div>
-							{/if}
-
-							<!-- Alert 2: Crypto Price Alert -->
-							{#if msg2Visible}
-								<div
-									class="flex animate-[message-pop_0.4s_cubic-bezier(0.175,0.885,0.32,1.275)_forwards] items-start gap-3"
-								>
-									<div
-										class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent to-blue-600 text-xs font-black text-white shadow-md"
-									>
-										F
-									</div>
-									<div class="flex min-w-0 flex-1 flex-col">
-										<div class="flex items-center gap-2">
-											<span
-												class="cursor-pointer text-xs leading-none font-bold text-text hover:underline"
-												>Winyx Bot</span
-											>
-											<span
-												class="flex items-center gap-0.5 rounded bg-accent/15 px-1.5 py-0.5 text-[9px] leading-none font-black text-accent uppercase"
-											>
-												<svg class="h-2.5 w-2.5" fill="currentColor" viewBox="0 0 24 24"
-													><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></svg
-												>
-												Bot
-											</span>
-											<span
-												class="cursor-pointer text-[10px] font-medium text-text-dim hover:underline"
-												>1m ago</span
-											>
-										</div>
-										<div
-											class="group mt-1.5 rounded-md border-l-[3px] border-green bg-surface-2/80 p-3 text-text-muted shadow-sm backdrop-blur-sm transition-all hover:bg-surface-2"
-										>
-											<span class="flex items-center gap-1.5 font-bold text-text">
-												📈 Target Hit: Breakout
-											</span>
-											<div class="mt-1.5 font-mono text-[11px] leading-relaxed">
-												<span class="font-bold text-text">BTCUSDT</span> surged past
-												<span
-													class="rounded border border-border/50 bg-surface px-1 font-bold text-text"
-													>$68,500</span
-												>.<br />Hourly volume: <span class="font-bold text-text">1.2K BTC</span>.
-											</div>
-										</div>
-									</div>
-								</div>
-							{/if}
-
-							<!-- Alert 3: Breaking News -->
-							{#if msg3Visible}
-								<div
-									class="flex animate-[message-pop_0.4s_cubic-bezier(0.175,0.885,0.32,1.275)_forwards] items-start gap-3"
-								>
-									<div
-										class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent to-blue-600 text-xs font-black text-white shadow-md"
-									>
-										F
-									</div>
-									<div class="flex min-w-0 flex-1 flex-col">
-										<div class="flex items-center gap-2">
-											<span
-												class="cursor-pointer text-xs leading-none font-bold text-text hover:underline"
-												>Winyx Bot</span
-											>
-											<span
-												class="flex items-center gap-0.5 rounded bg-accent/15 px-1.5 py-0.5 text-[9px] leading-none font-black text-accent uppercase"
-											>
-												<svg class="h-2.5 w-2.5" fill="currentColor" viewBox="0 0 24 24"
-													><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></svg
-												>
-												Bot
-											</span>
-											<span
-												class="cursor-pointer text-[10px] font-medium text-text-dim hover:underline"
-												>3m ago</span
-											>
-										</div>
-										<div
-											class="group mt-1.5 rounded-md border-l-[3px] border-blue bg-surface-2/80 p-3 text-text-muted shadow-sm backdrop-blur-sm transition-all hover:bg-surface-2"
-										>
-											<span class="flex items-center gap-1.5 font-bold text-text">
-												📰 Global News Update
-											</span>
-											<p class="mt-1.5 text-[12px] leading-snug font-semibold text-text">
-												US Core Durable Goods Orders MoM: 0.4% vs 0.1% forecast.
-											</p>
-											<div
-												class="mt-2 rounded border border-border/40 bg-surface p-1.5 font-mono text-[10.5px] text-text-muted"
-											>
-												<span class="font-semibold text-text">Impact:</span> Positive for USD. EURUSD
-												and GBPUSD dropping.
-											</div>
-										</div>
-									</div>
-								</div>
-							{/if}
+						<div class="flex min-h-[46px] items-center justify-between gap-5 px-4">
+							<div class="flex min-w-0 items-center gap-3">
+								<span
+									class="h-2 w-2 shrink-0 rounded-full {marketStore.connected
+										? 'bg-green'
+										: 'bg-red-500'}"
+								></span>
+								<span class="truncate font-mono text-[10px]">
+									{marketStore.connected
+										? 'REAL-TIME DATA STREAM CONNECTED'
+										: 'WAITING FOR MARKET STREAM'}
+								</span>
+							</div>
+							<span class="font-mono text-[9px] font-bold opacity-30">SLV</span>
 						</div>
 					</div>
 				</div>
 			</div>
+
+			<!-- Right artwork -->
+			<div class="relative mt-12 flex h-[520px] items-center justify-center lg:mt-0 lg:h-[690px]">
+				<div
+					class="pointer-events-none absolute left-1/2 top-1/2 h-[650px] w-[650px] -translate-x-1/2 -translate-y-1/2 rotate-[4deg] scale-x-[0.97] rounded-full bg-[repeating-conic-gradient(from_0deg,rgba(24,24,27,0.58)_0deg_0.6deg,transparent_0.6deg_5.5deg)] opacity-45 [mask-image:radial-gradient(circle,transparent_0%,transparent_30%,black_31%,black_100%)] [-webkit-mask-image:radial-gradient(circle,transparent_0%,transparent_30%,black_31%,black_100%)] dark:bg-[repeating-conic-gradient(from_0deg,rgba(255,255,255,0.72)_0deg_0.6deg,transparent_0.6deg_5.5deg)] dark:opacity-45 max-lg:h-[500px] max-lg:w-[500px] max-sm:h-[420px] max-sm:w-[420px]"
+				></div>
+
+				<div
+					class="pointer-events-none absolute left-[62%] top-[31%] h-[480px] w-[480px] -translate-x-1/2 -translate-y-1/2 -rotate-[14deg] scale-x-[0.55] rounded-full bg-[repeating-conic-gradient(from_0deg,rgba(24,24,27,0.46)_0deg_0.7deg,transparent_0.7deg_6deg)] opacity-40 [mask-image:radial-gradient(circle,transparent_0_30%,black_31%_100%)] [-webkit-mask-image:radial-gradient(circle,transparent_0_30%,black_31%_100%)] dark:bg-[repeating-conic-gradient(from_0deg,rgba(255,255,255,0.65)_0deg_0.7deg,transparent_0.7deg_6deg)] dark:opacity-40 max-sm:h-[320px] max-sm:w-[320px]"
+				></div>
+
+				<div
+					class="pointer-events-none absolute left-[33%] top-[34%] h-[470px] w-[470px] -translate-x-1/2 -translate-y-1/2 rotate-[28deg] scale-x-[0.46] rounded-full bg-[repeating-conic-gradient(from_0deg,rgba(24,24,27,0.42)_0deg_0.7deg,transparent_0.7deg_6deg)] opacity-35 [mask-image:radial-gradient(circle,transparent_0_30%,black_31%_100%)] [-webkit-mask-image:radial-gradient(circle,transparent_0_30%,black_31%_100%)] dark:bg-[repeating-conic-gradient(from_0deg,rgba(255,255,255,0.58)_0deg_0.7deg,transparent_0.7deg_6deg)] dark:opacity-35 max-sm:hidden"
+				></div>
+
+				<div
+					class="pointer-events-none absolute left-[78%] top-[57%] h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2 rotate-[22deg] scale-x-[0.35] rounded-full bg-[repeating-conic-gradient(from_0deg,rgba(24,24,27,0.40)_0deg_0.7deg,transparent_0.7deg_6deg)] opacity-30 [mask-image:radial-gradient(circle,transparent_0_30%,black_31%_100%)] [-webkit-mask-image:radial-gradient(circle,transparent_0_30%,black_31%_100%)] dark:bg-[repeating-conic-gradient(from_0deg,rgba(255,255,255,0.54)_0deg_0.7deg,transparent_0.7deg_6deg)] dark:opacity-30 max-sm:hidden"
+				></div>
+
+				<div class="pointer-events-none absolute left-1/2 top-1/2 h-[435px] w-[435px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-border max-sm:h-[300px] max-sm:w-[300px]"></div>
+				<div class="pointer-events-none absolute left-1/2 top-1/2 h-[515px] w-[515px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-border/60 max-sm:h-[360px] max-sm:w-[360px]"></div>
+
+				<div
+					class="absolute left-1/2 top-[51%] z-[3] h-[330px] w-[390px] -translate-x-1/2 -translate-y-1/2 -rotate-[2deg] overflow-hidden border border-border bg-surface-2/30 max-lg:h-[280px] max-lg:w-[330px] max-sm:h-[225px] max-sm:w-[270px]"
+				>
+					<div
+						class="absolute -inset-[20%] bg-[repeating-linear-gradient(-9deg,rgba(24,24,27,0.20)_0px_1px,transparent_1px_7px)] opacity-35 dark:bg-[repeating-linear-gradient(-9deg,rgba(255,255,255,0.20)_0px_1px,transparent_1px_7px)]"
+					></div>
+				</div>
+
+				<div
+					class="pointer-events-none absolute left-1/2 top-1/2 z-[4] h-[380px] w-[380px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-300/15 blur-[90px] dark:bg-amber-400/10"
+				></div>
+
+				<div class="pointer-events-none absolute left-[5%] right-0 top-[63%] z-[8] h-px bg-border"></div>
+
+				<div
+					class="group relative z-10 flex h-[500px] w-[500px] items-center justify-center max-lg:h-[440px] max-lg:w-[440px] max-sm:h-[350px] max-sm:w-[350px]"
+				>
+					<img
+						src={logoUrl}
+						alt="SLV artwork"
+						class="relative z-10 max-h-[500px] w-[86%] object-contain drop-shadow-[0_24px_45px_rgba(120,72,0,0.18)] transition-transform duration-700 group-hover:-rotate-1 group-hover:scale-[1.025] dark:drop-shadow-[0_24px_55px_rgba(0,0,0,0.45)]"
+					/>
+				</div>
+
+				<div class="absolute bottom-16 right-2 hidden font-mono text-[8px] tracking-[0.25em] text-text-dim lg:block">
+					SLV / MARKET SYSTEM / 2026
+				</div>
+			</div>
 		</div>
 
-		<!-- Scroll Down Indicator -->
 		<div
-			class="animate-fade-in absolute bottom-6 left-1/2 flex -translate-x-1/2 cursor-pointer flex-col items-center gap-2 text-xs text-text-dim opacity-0 transition-colors delay-500 duration-300 hover:text-text"
+			class="absolute bottom-5 left-1/2 z-30 h-3 w-[calc(100%-120px)] -translate-x-1/2 overflow-hidden border-y border-border max-sm:w-[calc(100%-48px)]"
 		>
-			<a href="#market" /* svelte-ignore no-navigation-without-resolve */ class="flex flex-col items-center gap-1.5">
-				<span class="text-[10px] font-semibold tracking-wider uppercase">Scroll to explore</span>
-				<div
-					class="animate-bounce rounded-full border border-border/50 bg-surface/50 p-2 backdrop-blur"
-				>
-					<svg
-						class="h-4 w-4"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke="currentColor"
-						stroke-width="2"
-					>
-						<path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-					</svg>
-				</div>
-			</a>
+			<div
+				class="h-full w-full bg-[repeating-linear-gradient(90deg,rgba(24,24,27,0.22)_0px_1px,transparent_1px_3px)] opacity-35 dark:bg-[repeating-linear-gradient(90deg,rgba(255,255,255,0.28)_0px_1px,transparent_1px_3px)]"
+			></div>
 		</div>
 	</section>
-
 	<div class="h-px w-full bg-border"></div>
 
 	<!-- Market Board Section -->
@@ -548,7 +397,7 @@
 						</div>
 					</div>
 					<aside
-						class="min-w-0 overflow-hidden rounded-xl border border-border/80 bg-surface shadow-sm xl:sticky xl:top-[92px] xl:self-start"
+						class="min-w-0 overflow-hidden rounded-xl border border-border/80 bg-surface shadow-sm xl:sticky xl:top-[104px] xl:self-start"
 					>
 						<MarketGrid selected={selectedSymbol} onselect={(sym) => (selectedSymbol = sym)} />
 					</aside>
@@ -660,11 +509,9 @@
 	<footer class="border-t border-border bg-surface px-4 py-8 md:px-8 lg:px-16">
 		<div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 sm:flex-row">
 			<div class="flex items-center gap-3">
-				<div class="flex h-6 w-6 items-center justify-center rounded bg-text text-bg">
-					<img src={logoUrl} alt="Winyx" class="h-4 w-4 object-contain invert dark:invert-0" />
-				</div>
+				<img src={logoUrl} alt="SLV" class="h-9 w-9 object-contain" />
 				<div class="flex items-center gap-2 text-sm font-medium text-text-muted">
-					<span class="font-bold text-text">Winyx</span>
+					<span class="font-bold text-text">SLV</span>
 					<span class="text-text-dim">×</span>
 					<span>Core</span>
 				</div>
@@ -674,12 +521,12 @@
 				<a
 					href={resolve('/docs')}
 					class="text-sm font-medium text-text-muted transition-colors hover:text-text"
-					>Documentation</a
+				>Documentation</a
 				>
 				<a
 					href={resolve('/portal')}
 					class="text-sm font-medium text-text-muted transition-colors hover:text-text"
-					>Admin Portal</a
+				>Admin Portal</a
 				>
 
 				<div

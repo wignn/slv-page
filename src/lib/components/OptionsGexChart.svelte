@@ -1,17 +1,40 @@
 <script lang="ts">
-	import type { OptionsGexItem } from '$lib/types';
+	import type { OptionsGexItem, OptionsContract } from '$lib/types';
 
 	interface Props {
 		gexItems?: OptionsGexItem[];
 		gex?: OptionsGexItem[];
 		items?: OptionsGexItem[];
+		contracts?: OptionsContract[];
 		underlyingPrice?: number;
 		height?: number;
 	}
 
-	let { gexItems, gex, items, underlyingPrice, height = 320 }: Props = $props();
+	let { gexItems, gex, items, contracts = [], underlyingPrice, height = 320 }: Props = $props();
 
-	let rawItems = $derived(gexItems ?? gex ?? items ?? []);
+	let rawItems = $derived.by(() => {
+		const direct = gexItems ?? gex ?? items ?? [];
+		if (direct.length > 0) return direct;
+
+		if (contracts.length > 0) {
+			const map = new Map<number, { strike: number; call_gex: number; put_gex: number; total_gex: number }>();
+			for (const c of contracts) {
+				const existing = map.get(c.strike) ?? { strike: c.strike, call_gex: 0, put_gex: 0, total_gex: 0 };
+				const contractGex = c.gex ?? (c.gamma * c.open_interest * 100 * (underlyingPrice ?? 1));
+				if (c.option_type === 'call') {
+					existing.call_gex += Math.abs(contractGex);
+				} else {
+					existing.put_gex += -Math.abs(contractGex);
+				}
+				existing.total_gex = existing.call_gex + existing.put_gex;
+				map.set(c.strike, existing);
+			}
+			return Array.from(map.values());
+		}
+
+		return [];
+	});
+
 	let sortedItems = $derived([...rawItems].sort((a, b) => a.strike - b.strike));
 
 	let maxGex = $derived(
@@ -23,8 +46,8 @@
 		)
 	);
 
-	let totalCallGex = $derived(sortedItems.reduce((acc, curr) => acc + curr.call_gex, 0));
-	let totalPutGex = $derived(sortedItems.reduce((acc, curr) => acc + curr.put_gex, 0));
+	let totalCallGex = $derived(sortedItems.reduce((acc, curr) => acc + Math.abs(curr.call_gex), 0));
+	let totalPutGex = $derived(sortedItems.reduce((acc, curr) => acc + -Math.abs(curr.put_gex), 0));
 	let netGex = $derived(totalCallGex + totalPutGex);
 
 	function formatGex(val: number): string {
@@ -85,11 +108,11 @@
 			No GEX data available
 		</div>
 	{:else}
-		<div class="relative mt-4 flex flex-col gap-1 overflow-x-auto" style="min-height: {height}px">
+		<div class="relative mt-4 flex flex-col gap-1 overflow-x-auto" style="height: {height}px">
 			<div class="flex h-full min-w-[600px] flex-1 items-end gap-1 pb-6 pt-4">
 				{#each sortedItems as item (item.strike)}
-					{@const callHeightPct = (Math.max(0, item.call_gex) / maxGex) * 100}
-					{@const putHeightPct = (Math.abs(Math.min(0, item.put_gex)) / maxGex) * 100}
+					{@const callHeightPct = (Math.abs(item.call_gex) / maxGex) * 100}
+					{@const putHeightPct = (Math.abs(item.put_gex) / maxGex) * 100}
 					{@const isAtm =
 						underlyingPrice !== undefined &&
 						Math.abs(item.strike - underlyingPrice) ===

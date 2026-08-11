@@ -16,9 +16,34 @@
 	let selectedType = $state<'all' | 'call' | 'put'>('all');
 	let searchQuery = $state<string>('');
 
+	function getExpiration(c: any): string {
+		return c.expiration_date ?? c.expiration ?? c.expire_date ?? c.exp_date ?? '-';
+	}
+	function getType(c: any): string {
+		return (c.option_type ?? c.type ?? c.side ?? c.optionType ?? '').toLowerCase();
+	}
+	function getStrike(c: any): number {
+		return typeof c.strike === 'number' ? c.strike : parseFloat(c.strike ?? c.strike_price ?? 0);
+	}
+	function getMark(c: any): number | null {
+		return c.mark_price ?? c.mark ?? c.price ?? c.last_price ?? null;
+	}
+	function getIv(c: any): number | null {
+		return c.implied_volatility ?? c.iv ?? c.impliedVolatility ?? null;
+	}
+	function getOi(c: any): number | null {
+		return c.open_interest ?? c.oi ?? c.openInterest ?? null;
+	}
+	function getVol(c: any): number | null {
+		return c.volume ?? c.vol ?? null;
+	}
+	function getGex(c: any): number {
+		return c.gex ?? ((c.gamma ?? 0) * (getOi(c) ?? 0) * 100 * (underlyingPrice ?? 1));
+	}
+
 	// Unique expiration dates sorted ascending
 	let expirationDates = $derived(
-		Array.from(new Set(rawContracts.map((c) => c.expiration_date))).sort(
+		Array.from(new Set(rawContracts.map(getExpiration).filter((d) => d !== '-'))).sort(
 			(a, b) => new Date(a).getTime() - new Date(b).getTime()
 		)
 	);
@@ -26,16 +51,20 @@
 	// Filtered contracts
 	let filteredContracts = $derived(
 		rawContracts.filter((c) => {
-			if (selectedExpiration !== 'all' && c.expiration_date !== selectedExpiration) {
+			const exp = getExpiration(c);
+			const optType = getType(c);
+			const strike = getStrike(c);
+			const symbolStr = (c.contract_symbol ?? c.symbol ?? '').toLowerCase();
+
+			if (selectedExpiration !== 'all' && exp !== selectedExpiration) {
 				return false;
 			}
-			if (selectedType !== 'all' && c.option_type.toLowerCase() !== selectedType) {
+			if (selectedType !== 'all' && optType !== selectedType) {
 				return false;
 			}
 			if (searchQuery.trim() !== '') {
 				const q = searchQuery.toLowerCase();
-				const strikeStr = c.strike.toString();
-				const symbolStr = c.contract_symbol.toLowerCase();
+				const strikeStr = strike.toString();
 				if (!strikeStr.includes(q) && !symbolStr.includes(q)) {
 					return false;
 				}
@@ -47,8 +76,10 @@
 	// Sorted contracts by strike then option_type
 	let sortedContracts = $derived(
 		[...filteredContracts].sort((a, b) => {
-			if (a.strike !== b.strike) return a.strike - b.strike;
-			return a.option_type.localeCompare(b.option_type);
+			const sA = getStrike(a);
+			const sB = getStrike(b);
+			if (sA !== sB) return sA - sB;
+			return getType(a).localeCompare(getType(b));
 		})
 	);
 
@@ -82,13 +113,15 @@
 		return `${pct.toFixed(1)}%`;
 	}
 
-	function isItm(contract: OptionsContract, undPrice?: number): boolean {
+	function isItm(contract: any, undPrice?: number): boolean {
 		if (undPrice === undefined) return false;
-		if (contract.option_type.toLowerCase() === 'call') {
-			return undPrice > contract.strike;
+		const s = getStrike(contract);
+		const t = getType(contract);
+		if (t === 'call') {
+			return undPrice > s;
 		}
-		if (contract.option_type.toLowerCase() === 'put') {
-			return undPrice < contract.strike;
+		if (t === 'put') {
+			return undPrice < s;
 		}
 		return false;
 	}
@@ -170,7 +203,7 @@
 					</tr>
 				{:else}
 					{#each sortedContracts as contract (contract.contract_symbol || `${contract.strike}-${contract.option_type}-${contract.expiration_date}`)}
-						{@const isCall = contract.option_type.toLowerCase() === 'call'}
+						{@const isCall = getType(contract) === 'call'}
 						{@const itm = isItm(contract, underlyingPrice)}
 						<tr
 							class="transition-colors hover:bg-surface-2/60 {itm && isCall ? 'bg-green/5' : itm && !isCall ? 'bg-red/5' : ''}"

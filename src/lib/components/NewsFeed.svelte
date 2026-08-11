@@ -28,7 +28,6 @@
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	function sentimentColor(s: string | null): string {
-		// Not used currently but kept for potential future use
 		if (!s) return 'text-text-dim';
 		const v = s.toLowerCase();
 		if (v === 'positive' || v === 'bullish') return 'text-green';
