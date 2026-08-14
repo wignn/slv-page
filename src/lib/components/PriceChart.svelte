@@ -239,28 +239,28 @@
 		if (!areaSeries || !chart) return;
 
 		const isDark = document.documentElement.classList.contains('dark');
-		const gridColor = isDark ? '#2A2E39' : '#e0e3eb';
-		const textColor = isDark ? '#B2B5BE' : '#434651';
-		const bgColor = isDark ? '#1E222D' : '#ffffff';
+		const gridColor = isDark ? '#3a3730' : '#d5cec1';
+		const textColor = isDark ? '#b9b2a7' : '#5f5b53';
+		const bgColor = isDark ? '#191916' : '#fbfaf7';
 
 		chart.applyOptions({
 			layout: { background: { color: bgColor }, textColor },
 			grid: { vertLines: { color: gridColor }, horzLines: { color: gridColor } }
 		});
 
-		const colorLine = direction === 'up' ? '#089981' : direction === 'down' ? '#F23645' : '#2962FF';
+		const colorLine = direction === 'up' ? '#2d9a68' : direction === 'down' ? '#d95c58' : '#d97724';
 		const colorTop =
 			direction === 'up'
-				? 'rgba(8,153,129,0.28)'
+				? 'rgba(45,154,104,0.28)'
 				: direction === 'down'
-					? 'rgba(242,54,69,0.28)'
-					: 'rgba(41,98,255,0.28)';
+					? 'rgba(217,92,88,0.28)'
+					: 'rgba(217,119,36,0.28)';
 		const colorBottom =
 			direction === 'up'
-				? 'rgba(8,153,129,0.0)'
+				? 'rgba(45,154,104,0.0)'
 				: direction === 'down'
-					? 'rgba(242,54,69,0.0)'
-					: 'rgba(41,98,255,0.0)';
+					? 'rgba(217,92,88,0.0)'
+					: 'rgba(217,119,36,0.0)';
 
 		areaSeries.applyOptions({ lineColor: colorLine, topColor: colorTop, bottomColor: colorBottom });
 	}
@@ -269,9 +269,9 @@
 		if (!chartContainer) return;
 
 		const isDark = document.documentElement.classList.contains('dark');
-		const gridColor = isDark ? '#2A2E39' : '#e0e3eb';
-		const textColor = isDark ? '#B2B5BE' : '#434651';
-		const bgColor = isDark ? '#1E222D' : '#ffffff';
+		const gridColor = isDark ? '#3a3730' : '#d5cec1';
+		const textColor = isDark ? '#b9b2a7' : '#5f5b53';
+		const bgColor = isDark ? '#191916' : '#fbfaf7';
 
 		chart = createChart(chartContainer, {
 			width: chartContainer.clientWidth,

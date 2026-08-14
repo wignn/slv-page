@@ -10,7 +10,7 @@
 		name="description"
 		content="Friendly real-time market analytics for forex, crypto, equities, news, calendars, and alerts."
 	/>
-	<meta name="theme-color" content="#09090B" />
+	<meta name="theme-color" content="#11110F" />
 </svelte:head>
 
 {@render children()}

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
 @import 'tailwindcss';
 
 @theme {
@@ -10,38 +10,41 @@
 	--color-text: var(--text-main);
 	--color-text-muted: var(--text-muted);
 	--color-text-dim: var(--text-dim);
-	--color-accent: #2962ff;
-	--color-accent-glow: #1e53e5;
-	--color-green: #089981;
-	--color-red: #f23645;
-	--color-blue: #2962ff;
-	--color-amber: #f59e0b;
-	--font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-	--font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+	--color-accent: #d97724;
+	--color-accent-glow: #ef923e;
+	--color-green: #2d9a68;
+	--color-red: #d95c58;
+	--color-blue: #6f8fb5;
+	--color-amber: #e4a33b;
+	--font-sans: 'DM Sans', system-ui, -apple-system, sans-serif;
+	--font-mono: 'Space Mono', 'Fira Code', monospace;
+	--radius-lg: 0.55rem;
+	--radius-xl: 0.75rem;
+	--radius-2xl: 1rem;
 }
 
 :root {
-	/* TradingView Light Theme (Default) */
-	--bg: #ffffff;
-	--surface: #ffffff;
-	--surface-2: #f0f3fa;
-	--border: #e0e3eb;
-	--border-subtle: #f0f3fa;
-	--text-main: #131722;
-	--text-muted: #434651;
-	--text-dim: #787b86;
+	/* Warm editorial light theme */
+	--bg: #f3f0e9;
+	--surface: #fbfaf7;
+	--surface-2: #e9e5dc;
+	--border: #d5cec1;
+	--border-subtle: #e5dfd4;
+	--text-main: #171714;
+	--text-muted: #5f5b53;
+	--text-dim: #8d877d;
 }
 
 :root.dark {
-	/* TradingView Dark Theme */
-	--bg: #131722;
-	--surface: #1e222d;
-	--surface-2: #2a2e39;
-	--border: #2a2e39;
-	--border-subtle: #1e222d;
-	--text-main: #d1d4dc;
-	--text-muted: #b2b5be;
-	--text-dim: #787b86;
+	/* Ink editorial dark theme */
+	--bg: #11110f;
+	--surface: #191916;
+	--surface-2: #24231f;
+	--border: #3a3730;
+	--border-subtle: #292721;
+	--text-main: #f3efe7;
+	--text-muted: #b9b2a7;
+	--text-dim: #847d72;
 }
 
 * {
@@ -58,6 +61,25 @@ body {
 	color: var(--color-text);
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+	background: color-mix(in srgb, var(--color-accent) 28%, transparent);
+	color: var(--color-text);
+}
+
+.terminal-rule {
+	border-color: var(--color-border);
+}
+
+.terminal-panel {
+	border: 1px solid var(--color-border);
+	background: var(--color-surface);
+	box-shadow: 0 10px 30px color-mix(in srgb, var(--color-text) 5%, transparent);
+}
+
+:root.dark .terminal-panel {
+	box-shadow: 0 14px 40px rgba(0, 0, 0, 0.18);
 }
 
 /* Scrollbar */

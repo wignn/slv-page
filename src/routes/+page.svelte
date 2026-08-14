@@ -22,6 +22,7 @@
 	import OptionsDashboard from '$lib/components/OptionsDashboard.svelte';
 	import FeatureGrid from '$lib/components/FeatureGrid.svelte';
 	import CommandRef from '$lib/components/CommandRef.svelte';
+	import HeroMotion from '$lib/components/HeroMotion.svelte';
 	import logoUrl from '$lib/assets/logo.png';
 	import { reveal } from '$lib/actions/reveal';
 
@@ -29,8 +30,12 @@
 	let viewMode = $state('chart');
 
 	let isDarkTheme = $state(false);
+	let lenis: { raf: (time: number) => void; scrollTo: (target: string) => void; destroy: () => void } | null = null;
+	let lenisFrame = 0;
+	let pageMounted = false;
 
 	onMount(() => {
+		pageMounted = true;
 		if (typeof window !== 'undefined') {
 			const storedTheme = localStorage.getItem('theme');
 			if (
@@ -45,9 +50,26 @@
 		startWebSocket();
 		startNewsPolling(60_000);
 		startCalendarPolling(300_000);
+
+		if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+			void import('lenis').then(({ default: Lenis }) => {
+				if (!pageMounted || !document.body.isConnected) return;
+				lenis = new Lenis({ duration: 1.05, smoothWheel: true });
+				const raf = (time: number) => {
+					lenis?.raf(time);
+					lenisFrame = requestAnimationFrame(raf);
+				};
+				lenisFrame = requestAnimationFrame(raf);
+			});
+		}
 	});
 
 	onDestroy(() => {
+		if (!pageMounted) return;
+		pageMounted = false;
+		cancelAnimationFrame(lenisFrame);
+		lenis?.destroy();
+		lenis = null;
 		stopWebSocket();
 		stopNewsPolling();
 		stopCalendarPolling();
@@ -67,7 +89,7 @@
 
 <div class="min-h-screen bg-bg text-text">
 	<header
-		class="sticky top-0 z-50 flex h-16 shrink-0 items-center justify-between border-b border-border bg-surface/90 px-4 shadow-sm backdrop-blur-xl md:px-6"
+		class="sticky top-0 z-50 flex h-[68px] shrink-0 items-center justify-between border-b border-border bg-bg/95 px-4 backdrop-blur-xl md:px-8"
 	>
 		<div class="flex items-center">
 			<a href={resolve('/')} class="group flex items-center gap-3" aria-label="SLV Home">
@@ -142,14 +164,14 @@
 				data-sveltekit-reload
 				target="_blank"
 				rel="noopener noreferrer"
-				class="rounded-md bg-accent px-3 py-2 text-xs font-semibold text-white shadow-[0_0_15px_rgba(41,98,255,0.25)] transition-all hover:bg-accent-glow hover:shadow-[0_0_25px_rgba(41,98,255,0.4)] active:scale-95 sm:px-4 sm:text-sm"
+				class="rounded-sm bg-accent px-3 py-2 text-xs font-semibold text-white transition-all hover:bg-accent-glow active:scale-95 sm:px-4 sm:text-sm"
 			>
 				Discord
 			</a>
 		</div>
 	</header>
 
-	<div class="relative sticky top-16 z-40">
+	<div class="relative sticky top-[68px] z-40 border-b border-border">
 		<TickerStrip />
 		<!-- Edge masks for smooth scrolling fade out -->
 		<div
@@ -162,7 +184,7 @@
 
 	<!-- SLV Hero -->
 	<section
-		class="relative min-h-[calc(100vh-96px)] overflow-hidden bg-bg text-text transition-colors duration-300"
+		class="relative min-h-[calc(100vh-104px)] overflow-hidden bg-bg text-text transition-colors duration-300"
 	>
 		<!-- Warm ambient glow that follows the logo palette -->
 		<div
@@ -175,7 +197,7 @@
 		></div>
 
 		<div
-			class="relative z-10 mx-auto grid min-h-[calc(100vh-96px)] w-full max-w-[1450px] grid-cols-1 items-center px-6 py-16 lg:grid-cols-[0.9fr_1.1fr] lg:px-16 xl:px-20"
+			class="relative z-10 mx-auto grid min-h-[calc(100vh-104px)] w-full max-w-[1500px] grid-cols-1 items-center px-6 py-16 lg:grid-cols-[1fr_0.92fr] lg:px-16 xl:px-24"
 		>
 			<!-- Left -->
 			<div class="relative z-20 flex flex-col items-start">
@@ -188,7 +210,7 @@
 				</div>
 
 				<h1
-					class="m-0 font-[Georgia,'Times_New_Roman',serif] text-[clamp(52px,6.4vw,108px)] font-normal leading-[0.82] tracking-[-0.07em] text-text"
+					class="m-0 max-w-[760px] font-[Georgia,'Times_New_Roman',serif] text-[clamp(52px,6.4vw,108px)] font-normal leading-[0.84] tracking-[-0.07em] text-text"
 				>
 					<span class="block lg:whitespace-nowrap">THE MARKET</span>
 					<span class="block lg:whitespace-nowrap">THAT MOVES</span>
@@ -226,7 +248,7 @@
 					</p>
 
 					<div
-						class="overflow-hidden rounded-xl border border-border bg-surface text-text shadow-sm"
+						class="terminal-panel overflow-hidden rounded-sm text-text"
 					>
 						<div
 							class="flex min-h-[35px] items-center gap-4 border-b border-border px-4 font-mono text-[8px] font-semibold tracking-[0.04em]"
@@ -258,6 +280,7 @@
 
 			<!-- Right artwork -->
 			<div class="relative mt-12 flex h-[520px] items-center justify-center lg:mt-0 lg:h-[690px]">
+				<HeroMotion />
 				<div
 					class="pointer-events-none absolute left-1/2 top-1/2 h-[650px] w-[650px] -translate-x-1/2 -translate-y-1/2 rotate-[4deg] scale-x-[0.97] rounded-full bg-[repeating-conic-gradient(from_0deg,rgba(24,24,27,0.58)_0deg_0.6deg,transparent_0.6deg_5.5deg)] opacity-45 [mask-image:radial-gradient(circle,transparent_0%,transparent_30%,black_31%,black_100%)] [-webkit-mask-image:radial-gradient(circle,transparent_0%,transparent_30%,black_31%,black_100%)] dark:bg-[repeating-conic-gradient(from_0deg,rgba(255,255,255,0.72)_0deg_0.6deg,transparent_0.6deg_5.5deg)] dark:opacity-45 max-lg:h-[500px] max-lg:w-[500px] max-sm:h-[420px] max-sm:w-[420px]"
 				></div>
@@ -320,7 +343,7 @@
 	<!-- Market Board Section -->
 	<section
 		id="market"
-		class="relative overflow-hidden bg-surface-2/30 px-3 py-10 md:px-5 lg:px-6"
+		class="relative overflow-hidden border-y border-border bg-surface-2/25 px-3 py-12 md:px-5 lg:px-8"
 		use:reveal={{ y: 40 }}
 	>
 		<div
@@ -419,7 +442,7 @@
 
 	<div class="h-px w-full bg-border"></div>
 
-	<section id="options" class="bg-surface-2/10 px-3 py-10 md:px-5 lg:px-6" use:reveal={{ y: 40 }}>
+	<section id="options" class="border-b border-border bg-bg px-3 py-12 md:px-5 lg:px-8" use:reveal={{ y: 40 }}>
 		<div class="mx-auto max-w-[1600px]">
 			<OptionsDashboard />
 		</div>
@@ -429,7 +452,7 @@
 
 	<section
 		id="analyzer"
-		class="relative bg-surface-2/10 px-3 py-10 md:px-5 lg:px-6"
+		class="relative border-b border-border bg-bg px-3 py-12 md:px-5 lg:px-8"
 		use:reveal={{ y: 40 }}
 	>
 		<div class="relative z-10 mx-auto max-w-[1600px]">
@@ -477,7 +500,7 @@
 
 	<div class="h-px w-full bg-border"></div>
 
-	<section id="calendar" class="bg-surface-2/20 px-3 py-10 md:px-5 lg:px-6" use:reveal={{ y: 40 }}>
+	<section id="calendar" class="border-b border-border bg-surface-2/20 px-3 py-12 md:px-5 lg:px-8" use:reveal={{ y: 40 }}>
 		<div class="mx-auto max-w-[1600px]">
 			<div class="mb-5 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
 				<div>
