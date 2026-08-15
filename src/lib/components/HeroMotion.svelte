@@ -34,7 +34,7 @@
 
 			const wireGeometry = new THREE.IcosahedronGeometry(1.7, 2);
 			const wireMaterial = new THREE.MeshBasicMaterial({
-				color: 0xd97724,
+				color: 0xc86622,
 				wireframe: true,
 				transparent: true,
 				opacity: 0.28
@@ -44,7 +44,7 @@
 
 			const coreGeometry = new THREE.IcosahedronGeometry(1.42, 1);
 			const coreMaterial = new THREE.MeshBasicMaterial({
-				color: 0xf0a35a,
+				color: 0xe4863d,
 				wireframe: true,
 				transparent: true,
 				opacity: 0.22
@@ -63,7 +63,7 @@
 				const curve = new THREE.EllipseCurve(0, 0, config.radius, config.radius * 0.34);
 				const geometry = new THREE.BufferGeometry().setFromPoints(curve.getPoints(96));
 				const material = new THREE.LineBasicMaterial({
-					color: 0xe4a33b,
+					color: 0xc78927,
 					transparent: true,
 					opacity: config.opacity
 				});
@@ -88,7 +88,7 @@
 			const nodeGeometry = new THREE.BufferGeometry();
 			nodeGeometry.setAttribute('position', new THREE.BufferAttribute(nodePositions, 3));
 			const nodeMaterial = new THREE.PointsMaterial({
-				color: 0xf4c27d,
+				color: 0xf0b968,
 				size: 0.045,
 				transparent: true,
 				opacity: 0.72,
@@ -98,9 +98,13 @@
 			sculpture.add(nodes);
 
 			const pointer = { x: 0, y: 0, targetX: 0, targetY: 0 };
+			const scroll = { y: 0, targetY: 0 };
 			const onPointerMove = (event: PointerEvent) => {
 				pointer.targetX = (event.clientX / window.innerWidth - 0.5) * 2;
 				pointer.targetY = (event.clientY / window.innerHeight - 0.5) * 2;
+			};
+			const onScroll = () => {
+				scroll.targetY = Math.min(window.scrollY / Math.max(window.innerHeight, 1), 1) * 0.35;
 			};
 			const resize = () => {
 				const { width, height } = canvas.getBoundingClientRect();
@@ -112,6 +116,8 @@
 			const observer = new ResizeObserver(resize);
 			observer.observe(canvas);
 			window.addEventListener('pointermove', onPointerMove, { passive: true });
+			window.addEventListener('scroll', onScroll, { passive: true });
+			onScroll();
 			resize();
 
 			const startedAt = performance.now();
@@ -120,8 +126,10 @@
 				const elapsed = (time - startedAt) * 0.00018;
 				pointer.x += (pointer.targetX - pointer.x) * 0.035;
 				pointer.y += (pointer.targetY - pointer.y) * 0.035;
+				scroll.y += (scroll.targetY - scroll.y) * 0.04;
 				sculpture.rotation.y = elapsed * 0.7 + pointer.x * 0.1;
-				sculpture.rotation.x = Math.sin(elapsed * 0.8) * 0.06 + pointer.y * 0.05;
+				sculpture.rotation.x = Math.sin(elapsed * 0.8) * 0.06 + pointer.y * 0.05 + scroll.y * 0.12;
+				sculpture.position.y = -scroll.y * 0.35;
 				wire.rotation.y = elapsed * 0.55;
 				core.rotation.y = -elapsed * 0.85;
 				core.rotation.x = elapsed * 0.35;
@@ -138,6 +146,7 @@
 				cancelAnimationFrame(frame);
 				observer.disconnect();
 				window.removeEventListener('pointermove', onPointerMove);
+				window.removeEventListener('scroll', onScroll);
 				wireGeometry.dispose();
 				wireMaterial.dispose();
 				coreGeometry.dispose();
@@ -167,7 +176,7 @@
 		width: 100%;
 		height: 100%;
 		pointer-events: none;
-		opacity: 0.82;
+		opacity: 0.66;
 		mix-blend-mode: multiply;
 	}
 

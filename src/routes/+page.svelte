@@ -54,7 +54,7 @@
 		if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
 			void import('lenis').then(({ default: Lenis }) => {
 				if (!pageMounted || !document.body.isConnected) return;
-				lenis = new Lenis({ duration: 1.05, smoothWheel: true });
+				lenis = new Lenis({ duration: 1.05, smoothWheel: true, lerp: 0.08, anchors: true, gestureOrientation: 'vertical' });
 				const raf = (time: number) => {
 					lenis?.raf(time);
 					lenisFrame = requestAnimationFrame(raf);
@@ -188,12 +188,12 @@
 	>
 		<!-- Warm ambient glow that follows the logo palette -->
 		<div
-			class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_72%_44%,rgba(255,190,40,0.16)_0%,rgba(255,190,40,0.07)_22%,transparent_50%)] dark:bg-[radial-gradient(circle_at_72%_44%,rgba(255,179,0,0.13)_0%,rgba(255,179,0,0.05)_24%,transparent_52%)]"
+			class="hero-glow pointer-events-none absolute inset-0"
 		></div>
 
 		<!-- Subtle grid -->
 		<div
-			class="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#000_1px,transparent_1px),linear-gradient(to_bottom,#000_1px,transparent_1px)] bg-[size:64px_64px] opacity-[0.028] dark:bg-[linear-gradient(to_right,#fff_1px,transparent_1px),linear-gradient(to_bottom,#fff_1px,transparent_1px)] dark:opacity-[0.035]"
+			class="hero-grid pointer-events-none absolute inset-0"
 		></div>
 
 		<div
@@ -282,19 +282,19 @@
 			<div class="relative mt-12 flex h-[520px] items-center justify-center lg:mt-0 lg:h-[690px]">
 				<HeroMotion />
 				<div
-					class="pointer-events-none absolute left-1/2 top-1/2 h-[650px] w-[650px] -translate-x-1/2 -translate-y-1/2 rotate-[4deg] scale-x-[0.97] rounded-full bg-[repeating-conic-gradient(from_0deg,rgba(24,24,27,0.58)_0deg_0.6deg,transparent_0.6deg_5.5deg)] opacity-45 [mask-image:radial-gradient(circle,transparent_0%,transparent_30%,black_31%,black_100%)] [-webkit-mask-image:radial-gradient(circle,transparent_0%,transparent_30%,black_31%,black_100%)] dark:bg-[repeating-conic-gradient(from_0deg,rgba(255,255,255,0.72)_0deg_0.6deg,transparent_0.6deg_5.5deg)] dark:opacity-45 max-lg:h-[500px] max-lg:w-[500px] max-sm:h-[420px] max-sm:w-[420px]"
+					class="hero-rays pointer-events-none absolute left-1/2 top-1/2 h-[650px] w-[650px] -translate-x-1/2 -translate-y-1/2 rotate-[4deg] scale-x-[0.97] rounded-full opacity-45 [mask-image:radial-gradient(circle,transparent_0%,transparent_30%,black_31%,black_100%)] [-webkit-mask-image:radial-gradient(circle,transparent_0%,transparent_30%,black_31%,black_100%)] max-lg:h-[500px] max-lg:w-[500px] max-sm:h-[420px] max-sm:w-[420px]"
 				></div>
 
 				<div
-					class="pointer-events-none absolute left-[62%] top-[31%] h-[480px] w-[480px] -translate-x-1/2 -translate-y-1/2 -rotate-[14deg] scale-x-[0.55] rounded-full bg-[repeating-conic-gradient(from_0deg,rgba(24,24,27,0.46)_0deg_0.7deg,transparent_0.7deg_6deg)] opacity-40 [mask-image:radial-gradient(circle,transparent_0_30%,black_31%_100%)] [-webkit-mask-image:radial-gradient(circle,transparent_0_30%,black_31%_100%)] dark:bg-[repeating-conic-gradient(from_0deg,rgba(255,255,255,0.65)_0deg_0.7deg,transparent_0.7deg_6deg)] dark:opacity-40 max-sm:h-[320px] max-sm:w-[320px]"
+					class="pointer-events-none absolute left-[62%] top-[31%] h-[480px] w-[480px] -translate-x-1/2 -translate-y-1/2 -rotate-[14deg] scale-x-[0.55] rounded-full hero-rays opacity-40 [mask-image:radial-gradient(circle,transparent_0_30%,black_31%_100%)] [-webkit-mask-image:radial-gradient(circle,transparent_0_30%,black_31%_100%)] dark:opacity-40 max-sm:h-[320px] max-sm:w-[320px]"
 				></div>
 
 				<div
-					class="pointer-events-none absolute left-[33%] top-[34%] h-[470px] w-[470px] -translate-x-1/2 -translate-y-1/2 rotate-[28deg] scale-x-[0.46] rounded-full bg-[repeating-conic-gradient(from_0deg,rgba(24,24,27,0.42)_0deg_0.7deg,transparent_0.7deg_6deg)] opacity-35 [mask-image:radial-gradient(circle,transparent_0_30%,black_31%_100%)] [-webkit-mask-image:radial-gradient(circle,transparent_0_30%,black_31%_100%)] dark:bg-[repeating-conic-gradient(from_0deg,rgba(255,255,255,0.58)_0deg_0.7deg,transparent_0.7deg_6deg)] dark:opacity-35 max-sm:hidden"
+					class="pointer-events-none absolute left-[33%] top-[34%] h-[470px] w-[470px] -translate-x-1/2 -translate-y-1/2 rotate-[28deg] scale-x-[0.46] rounded-full hero-rays opacity-35 [mask-image:radial-gradient(circle,transparent_0_30%,black_31%_100%)] [-webkit-mask-image:radial-gradient(circle,transparent_0_30%,black_31%_100%)] dark:opacity-35 max-sm:hidden"
 				></div>
 
 				<div
-					class="pointer-events-none absolute left-[78%] top-[57%] h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2 rotate-[22deg] scale-x-[0.35] rounded-full bg-[repeating-conic-gradient(from_0deg,rgba(24,24,27,0.40)_0deg_0.7deg,transparent_0.7deg_6deg)] opacity-30 [mask-image:radial-gradient(circle,transparent_0_30%,black_31%_100%)] [-webkit-mask-image:radial-gradient(circle,transparent_0_30%,black_31%_100%)] dark:bg-[repeating-conic-gradient(from_0deg,rgba(255,255,255,0.54)_0deg_0.7deg,transparent_0.7deg_6deg)] dark:opacity-30 max-sm:hidden"
+					class="pointer-events-none absolute left-[78%] top-[57%] h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2 rotate-[22deg] scale-x-[0.35] rounded-full hero-rays opacity-30 [mask-image:radial-gradient(circle,transparent_0_30%,black_31%_100%)] [-webkit-mask-image:radial-gradient(circle,transparent_0_30%,black_31%_100%)] dark:opacity-30 max-sm:hidden"
 				></div>
 
 				<div class="pointer-events-none absolute left-1/2 top-1/2 h-[435px] w-[435px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-border max-sm:h-[300px] max-sm:w-[300px]"></div>
@@ -304,7 +304,7 @@
 					class="absolute left-1/2 top-[51%] z-[3] h-[330px] w-[390px] -translate-x-1/2 -translate-y-1/2 -rotate-[2deg] overflow-hidden border border-border bg-surface-2/30 max-lg:h-[280px] max-lg:w-[330px] max-sm:h-[225px] max-sm:w-[270px]"
 				>
 					<div
-						class="absolute -inset-[20%] bg-[repeating-linear-gradient(-9deg,rgba(24,24,27,0.20)_0px_1px,transparent_1px_7px)] opacity-35 dark:bg-[repeating-linear-gradient(-9deg,rgba(255,255,255,0.20)_0px_1px,transparent_1px_7px)]"
+						class="hero-scanlines absolute -inset-[20%] opacity-35"
 					></div>
 				</div>
 
@@ -334,7 +334,7 @@
 			class="absolute bottom-5 left-1/2 z-30 h-3 w-[calc(100%-120px)] -translate-x-1/2 overflow-hidden border-y border-border max-sm:w-[calc(100%-48px)]"
 		>
 			<div
-				class="h-full w-full bg-[repeating-linear-gradient(90deg,rgba(24,24,27,0.22)_0px_1px,transparent_1px_3px)] opacity-35 dark:bg-[repeating-linear-gradient(90deg,rgba(255,255,255,0.28)_0px_1px,transparent_1px_3px)]"
+				class="h-full w-full hero-scanlines opacity-35"
 			></div>
 		</div>
 	</section>
