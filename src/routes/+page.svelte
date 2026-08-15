@@ -173,7 +173,6 @@
 
 	<div class="relative sticky top-[68px] z-40 border-b border-border">
 		<TickerStrip />
-		<!-- Edge masks for smooth scrolling fade out -->
 		<div
 			class="pointer-events-none absolute inset-y-0 left-0 z-10 w-8 bg-gradient-to-r from-bg to-transparent"
 		></div>
@@ -182,11 +181,9 @@
 		></div>
 	</div>
 
-	<!-- SLV Hero -->
 	<section
 		class="relative min-h-[calc(100vh-104px)] overflow-hidden bg-bg text-text transition-colors duration-300"
 	>
-		<!-- Warm ambient glow that follows the logo palette -->
 		<div
 			class="hero-glow pointer-events-none absolute inset-0"
 		></div>
