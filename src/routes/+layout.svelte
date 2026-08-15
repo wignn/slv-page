@@ -5,7 +5,7 @@
 </script>
 
 <svelte:head>
-	<title>Winyx — Real-time Market Intelligence</title>
+	<title>SLV — Real-time Market Intelligence</title>
 	<meta
 		name="description"
 		content="Friendly real-time market analytics for forex, crypto, equities, news, calendars, and alerts."

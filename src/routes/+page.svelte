@@ -136,7 +136,7 @@
 			</button>
 
 			<a
-				href={resolve('/docs')}
+				href='https://pia.wign.dev/portal#api'
 				class="hidden text-sm font-medium text-text-muted transition-colors hover:text-text sm:block"
 			>
 				Docs
@@ -160,13 +160,13 @@
 			</a>
 
 			<a
-				href={DISCORD_INVITE}
+				href='https://pia.wign.dev/portal'
 				data-sveltekit-reload
 				target="_blank"
 				rel="noopener noreferrer"
 				class="rounded-sm bg-accent px-3 py-2 text-xs font-semibold text-white transition-all hover:bg-accent-glow active:scale-95 sm:px-4 sm:text-sm"
 			>
-				Discord
+				Portal
 			</a>
 		</div>
 	</header>
@@ -223,96 +223,20 @@
 				</p>
 
 				<div class="mt-10">
-					<p
-						class="mb-4 font-mono text-[10px] font-medium tracking-[0.22em] text-text-dim"
-					>
-						LIVE INTELLIGENCE SYSTEM
-					</p>
-
-					<a
-						href="#market"
-						class="group inline-flex items-center gap-3 bg-text px-6 py-4 font-mono text-[11px] font-bold tracking-[0.13em] text-bg shadow-[0_10px_30px_rgba(0,0,0,0.12)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_15px_35px_rgba(0,0,0,0.18)]"
-					>
-						<span class="relative flex h-2 w-2">
-							<span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-60"></span>
-							<span class="relative inline-flex h-2 w-2 rounded-full bg-amber-400"></span>
-						</span>
-						EXPLORE LIVE MARKET
-						<span class="ml-1 transition-transform duration-200 group-hover:translate-x-1">→</span>
-					</a>
-				</div>
-
-				<div class="mt-9 w-full max-w-[500px]">
-					<p class="mb-3 font-mono text-[10px] tracking-[0.22em] text-text-dim">
-						SYSTEM STATUS
-					</p>
-
-					<div
-						class="terminal-panel overflow-hidden rounded-sm text-text"
-					>
-						<div
-							class="flex min-h-[35px] items-center gap-4 border-b border-border px-4 font-mono text-[8px] font-semibold tracking-[0.04em]"
+		<a
+							href='https://pia.wign.dev/'
+							class="group inline-flex items-center gap-3 rounded-sm bg-accent px-6 py-4 font-mono text-[11px] font-bold tracking-[0.13em] text-white shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:bg-accent-glow hover:shadow-xl active:scale-95"
 						>
-							<span class="text-text">LIVE</span>
-							<span class="opacity-35">FOREX</span>
-							<span class="opacity-35">CRYPTO</span>
-							<span class="opacity-35">NEWS</span>
-						</div>
-
-						<div class="flex min-h-[46px] items-center justify-between gap-5 px-4">
-							<div class="flex min-w-0 items-center gap-3">
-								<span
-									class="h-2 w-2 shrink-0 rounded-full {marketStore.connected
-										? 'bg-green'
-										: 'bg-red-500'}"
-								></span>
-								<span class="truncate font-mono text-[10px]">
-									{marketStore.connected
-										? 'REAL-TIME DATA STREAM CONNECTED'
-										: 'WAITING FOR MARKET STREAM'}
-								</span>
-							</div>
-							<span class="font-mono text-[9px] font-bold opacity-30">SLV</span>
-						</div>
-					</div>
+							GET STARTED PORTAL
+							<span class="ml-1 transition-transform duration-200 group-hover:translate-x-1">→</span>
+						</a>		
 				</div>
+
 			</div>
 
 			<!-- Right artwork -->
 			<div class="relative mt-12 flex h-[520px] items-center justify-center lg:mt-0 lg:h-[690px]">
 				<HeroMotion />
-				<div
-					class="hero-rays pointer-events-none absolute left-1/2 top-1/2 h-[650px] w-[650px] -translate-x-1/2 -translate-y-1/2 rotate-[4deg] scale-x-[0.97] rounded-full opacity-45 [mask-image:radial-gradient(circle,transparent_0%,transparent_30%,black_31%,black_100%)] [-webkit-mask-image:radial-gradient(circle,transparent_0%,transparent_30%,black_31%,black_100%)] max-lg:h-[500px] max-lg:w-[500px] max-sm:h-[420px] max-sm:w-[420px]"
-				></div>
-
-				<div
-					class="pointer-events-none absolute left-[62%] top-[31%] h-[480px] w-[480px] -translate-x-1/2 -translate-y-1/2 -rotate-[14deg] scale-x-[0.55] rounded-full hero-rays opacity-40 [mask-image:radial-gradient(circle,transparent_0_30%,black_31%_100%)] [-webkit-mask-image:radial-gradient(circle,transparent_0_30%,black_31%_100%)] dark:opacity-40 max-sm:h-[320px] max-sm:w-[320px]"
-				></div>
-
-				<div
-					class="pointer-events-none absolute left-[33%] top-[34%] h-[470px] w-[470px] -translate-x-1/2 -translate-y-1/2 rotate-[28deg] scale-x-[0.46] rounded-full hero-rays opacity-35 [mask-image:radial-gradient(circle,transparent_0_30%,black_31%_100%)] [-webkit-mask-image:radial-gradient(circle,transparent_0_30%,black_31%_100%)] dark:opacity-35 max-sm:hidden"
-				></div>
-
-				<div
-					class="pointer-events-none absolute left-[78%] top-[57%] h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2 rotate-[22deg] scale-x-[0.35] rounded-full hero-rays opacity-30 [mask-image:radial-gradient(circle,transparent_0_30%,black_31%_100%)] [-webkit-mask-image:radial-gradient(circle,transparent_0_30%,black_31%_100%)] dark:opacity-30 max-sm:hidden"
-				></div>
-
-				<div class="pointer-events-none absolute left-1/2 top-1/2 h-[435px] w-[435px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-border max-sm:h-[300px] max-sm:w-[300px]"></div>
-				<div class="pointer-events-none absolute left-1/2 top-1/2 h-[515px] w-[515px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-border/60 max-sm:h-[360px] max-sm:w-[360px]"></div>
-
-				<div
-					class="absolute left-1/2 top-[51%] z-[3] h-[330px] w-[390px] -translate-x-1/2 -translate-y-1/2 -rotate-[2deg] overflow-hidden border border-border bg-surface-2/30 max-lg:h-[280px] max-lg:w-[330px] max-sm:h-[225px] max-sm:w-[270px]"
-				>
-					<div
-						class="hero-scanlines absolute -inset-[20%] opacity-35"
-					></div>
-				</div>
-
-				<div
-					class="pointer-events-none absolute left-1/2 top-1/2 z-[4] h-[380px] w-[380px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-300/15 blur-[90px] dark:bg-amber-400/10"
-				></div>
-
-				<div class="pointer-events-none absolute left-[5%] right-0 top-[63%] z-[8] h-px bg-border"></div>
 
 				<div
 					class="group relative z-10 flex h-[500px] w-[500px] items-center justify-center max-lg:h-[440px] max-lg:w-[440px] max-sm:h-[350px] max-sm:w-[350px]"
@@ -325,18 +249,12 @@
 				</div>
 
 				<div class="absolute bottom-16 right-2 hidden font-mono text-[8px] tracking-[0.25em] text-text-dim lg:block">
-					SLV / MARKET SYSTEM / 2026
+					Nodus Reasearch & Development
 				</div>
 			</div>
 		</div>
 
-		<div
-			class="absolute bottom-5 left-1/2 z-30 h-3 w-[calc(100%-120px)] -translate-x-1/2 overflow-hidden border-y border-border max-sm:w-[calc(100%-48px)]"
-		>
-			<div
-				class="h-full w-full hero-scanlines opacity-35"
-			></div>
-		</div>
+
 	</section>
 	<div class="h-px w-full bg-border"></div>
 
@@ -519,16 +437,6 @@
 
 	<div class="h-px w-full bg-border"></div>
 
-	<div use:reveal={{ y: 40 }}>
-		<FeatureGrid />
-	</div>
-
-	<div class="h-px w-full bg-border"></div>
-
-	<div use:reveal={{ y: 40 }}>
-		<CommandRef />
-	</div>
-
 	<footer class="border-t border-border bg-surface px-4 py-8 md:px-8 lg:px-16">
 		<div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 sm:flex-row">
 			<div class="flex items-center gap-3">
@@ -536,20 +444,20 @@
 				<div class="flex items-center gap-2 text-sm font-medium text-text-muted">
 					<span class="font-bold text-text">SLV</span>
 					<span class="text-text-dim">×</span>
-					<span>Core</span>
+					<span>ATLSD ENGINE</span>
 				</div>
 			</div>
 
 			<div class="flex items-center gap-6">
 				<a
-					href={resolve('/docs')}
+					href='https://pia.wign.dev/portal#api'
 					class="text-sm font-medium text-text-muted transition-colors hover:text-text"
 				>Documentation</a
 				>
 				<a
-					href={resolve('/portal')}
+					href='https://pia.wign.dev/portal'
 					class="text-sm font-medium text-text-muted transition-colors hover:text-text"
-				>Admin Portal</a
+				>Portal</a
 				>
 
 				<div
