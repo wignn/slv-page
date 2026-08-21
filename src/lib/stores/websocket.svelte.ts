@@ -15,18 +15,7 @@ let reconnectDelay = 1000;
 let requestId = 1;
 let isOpening = false;
 const desiredStreams = new Set(['market_data', 'forex_news', 'stock_news']);
-const hiddenMarketSymbols = new Set([
-	'BBCA',
-	'BBRI',
-	'BMRI',
-	'TLKM',
-	'ASII',
-	'UNVR',
-	'ICBP',
-	'BBNI',
-	'ADRO',
-	'MDKA',
-]);
+const hiddenMarketSymbols = new Set<string>();
 
 function isHiddenMarketSymbol(symbol: string): boolean {
 	return hiddenMarketSymbols.has(symbol.toUpperCase());
