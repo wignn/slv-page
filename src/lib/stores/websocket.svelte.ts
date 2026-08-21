@@ -26,7 +26,6 @@ const hiddenMarketSymbols = new Set([
 	'BBNI',
 	'ADRO',
 	'MDKA',
-	'JCI'
 ]);
 
 function isHiddenMarketSymbol(symbol: string): boolean {

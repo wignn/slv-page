@@ -12,13 +12,19 @@
 
 	let allPrices: PriceData[] = $derived(marketStore.prices);
 	const primarySymbols = [
+		'IHSG',
 		'SPX',
 		'XAUUSD',
+		'WTI',
 		'BTCUSDT',
 		'DXY',
 		'ETHUSDT',
 		'EURUSD',
 		'GBPUSD',
+		'USDJPY',
+		'BBCA',
+		'BBRI',
+		'BMRI',
 		'AAPL',
 		'NVDA'
 	];
@@ -32,9 +38,13 @@
 			? 'crypto'
 			: symbol === 'SPX' || symbol === 'DXY'
 				? 'index'
-				: symbol === 'XAUUSD'
+				: symbol === 'XAUUSD' || symbol === 'WTI'
 					? 'commodity'
-					: 'forex';
+					: symbol === 'IHSG'
+						? 'index'
+						: ['BBCA', 'BBRI', 'BMRI'].includes(symbol)
+							? 'stock'
+							: 'forex';
 		return {
 			symbol,
 			price: 0,
@@ -146,12 +156,25 @@
 			unit = 'USD';
 			format = (val: number) =>
 				val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+		} else if (sym === 'IHSG') {
+			name = 'Jakarta Composite / IHSG';
+			badge = 'IHSG';
+			badgeColor = 'bg-red-600/10 text-red-500 border border-red-600/20';
+			unit = 'INDEX';
+			format = (val: number) =>
+				val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 		} else if (sym === 'DXY') {
 			name = 'US Dollar Index';
 			badge = 'DXY';
 			badgeColor = 'bg-emerald-600/10 text-emerald-600 border border-[#10B981]/20';
 			unit = 'RATE';
 			format = (val: number) => val.toFixed(3);
+		} else if (sym === 'WTI') {
+			name = 'WTI Crude Oil';
+			badge = 'WTI';
+			badgeColor = 'bg-orange-500/10 text-orange-500 border border-orange-500/20';
+			unit = 'USD';
+			format = (val: number) => val.toFixed(2);
 		} else if (category === 'stocks') {
 			name = `${sym} Equity`;
 			badge = sym.slice(0, 4);
