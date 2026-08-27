@@ -11,7 +11,9 @@
 	} from '$lib/stores/websocket.svelte';
 	import { forexNews, newsLoading, startNewsPolling, stopNewsPolling } from '$lib/stores/news';
 	import { startCalendarPolling, stopCalendarPolling } from '$lib/stores/calendar';
+	import { startMacroPolling, stopMacroPolling } from '$lib/stores/macro';
 	import TickerStrip from '$lib/components/TickerStrip.svelte';
+	import MacroDashboard from '$lib/components/MacroDashboard.svelte';
 	import MarketGrid from '$lib/components/MarketGrid.svelte';
 	import PriceChart from '$lib/components/PriceChart.svelte';
 	import WhyDidItMoveCard from '$lib/components/WhyDidItMoveCard.svelte';
@@ -30,7 +32,11 @@
 	let viewMode = $state('chart');
 
 	let isDarkTheme = $state(false);
-	let lenis: { raf: (time: number) => void; scrollTo: (target: string) => void; destroy: () => void } | null = null;
+	let lenis: {
+		raf: (time: number) => void;
+		scrollTo: (target: string) => void;
+		destroy: () => void;
+	} | null = null;
 	let lenisFrame = 0;
 	let pageMounted = false;
 
@@ -50,11 +56,18 @@
 		startWebSocket();
 		startNewsPolling(60_000);
 		startCalendarPolling(300_000);
+		startMacroPolling(600_000);
 
 		if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
 			void import('lenis').then(({ default: Lenis }) => {
 				if (!pageMounted || !document.body.isConnected) return;
-				lenis = new Lenis({ duration: 1.05, smoothWheel: true, lerp: 0.08, anchors: true, gestureOrientation: 'vertical' });
+				lenis = new Lenis({
+					duration: 1.05,
+					smoothWheel: true,
+					lerp: 0.08,
+					anchors: true,
+					gestureOrientation: 'vertical'
+				});
 				const raf = (time: number) => {
 					lenis?.raf(time);
 					lenisFrame = requestAnimationFrame(raf);
@@ -73,6 +86,7 @@
 		stopWebSocket();
 		stopNewsPolling();
 		stopCalendarPolling();
+		stopMacroPolling();
 	});
 
 	function toggleTheme() {
@@ -101,7 +115,9 @@
 
 				<div class="flex flex-col leading-none">
 					<span class="text-[17px] font-black tracking-[-0.03em] text-text">SLV</span>
-					<span class="mt-1 hidden text-[9px] font-semibold tracking-[0.18em] text-text-dim uppercase sm:block">
+					<span
+						class="mt-1 hidden text-[9px] font-semibold tracking-[0.18em] text-text-dim uppercase sm:block"
+					>
 						Market Intelligence
 					</span>
 				</div>
@@ -136,7 +152,7 @@
 			</button>
 
 			<a
-				href='https://pia.wign.dev/portal#api'
+				href="https://pia.wign.dev/portal#api"
 				class="hidden text-sm font-medium text-text-muted transition-colors hover:text-text sm:block"
 			>
 				Docs
@@ -149,7 +165,12 @@
 				rel="noopener noreferrer"
 				class="hidden items-center gap-1.5 rounded-full border border-border bg-surface-2/60 px-3 py-1.5 text-xs font-semibold text-text-muted shadow-sm transition-all hover:border-text-dim/30 hover:bg-border/30 hover:text-text md:flex"
 			>
-				<svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+				<svg
+					class="h-3.5 w-3.5"
+					viewBox="0 0 24 24"
+					fill="currentColor"
+					xmlns="http://www.w3.org/2000/svg"
+				>
 					<path
 						fill-rule="evenodd"
 						clip-rule="evenodd"
@@ -160,7 +181,7 @@
 			</a>
 
 			<a
-				href='https://pia.wign.dev/portal'
+				href="https://pia.wign.dev/portal"
 				data-sveltekit-reload
 				target="_blank"
 				rel="noopener noreferrer"
@@ -184,14 +205,10 @@
 	<section
 		class="relative min-h-[calc(100vh-104px)] overflow-hidden bg-bg text-text transition-colors duration-300"
 	>
-		<div
-			class="hero-glow pointer-events-none absolute inset-0"
-		></div>
+		<div class="hero-glow pointer-events-none absolute inset-0"></div>
 
 		<!-- Subtle grid -->
-		<div
-			class="hero-grid pointer-events-none absolute inset-0"
-		></div>
+		<div class="hero-grid pointer-events-none absolute inset-0"></div>
 
 		<div
 			class="relative z-10 mx-auto grid min-h-[calc(100vh-104px)] w-full max-w-[1500px] grid-cols-1 items-center px-6 py-16 lg:grid-cols-[1fr_0.92fr] lg:px-16 xl:px-24"
@@ -207,7 +224,7 @@
 				</div>
 
 				<h1
-					class="m-0 max-w-[760px] font-[Georgia,'Times_New_Roman',serif] text-[clamp(52px,6.4vw,108px)] font-normal leading-[0.84] tracking-[-0.07em] text-text"
+					class="m-0 max-w-[760px] font-[Georgia,'Times_New_Roman',serif] text-[clamp(52px,6.4vw,108px)] leading-[0.84] font-normal tracking-[-0.07em] text-text"
 				>
 					<span class="block lg:whitespace-nowrap">THE MARKET</span>
 					<span class="block lg:whitespace-nowrap">THAT MOVES</span>
@@ -220,15 +237,14 @@
 				</p>
 
 				<div class="mt-10">
-		<a
-							href='https://pia.wign.dev/'
-							class="group inline-flex items-center gap-3 rounded-sm bg-accent px-6 py-4 font-mono text-[11px] font-bold tracking-[0.13em] text-white shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:bg-accent-glow hover:shadow-xl active:scale-95"
-						>
-							GET STARTED PORTAL
-							<span class="ml-1 transition-transform duration-200 group-hover:translate-x-1">→</span>
-						</a>		
+					<a
+						href="https://pia.wign.dev/"
+						class="group inline-flex items-center gap-3 rounded-sm bg-accent px-6 py-4 font-mono text-[11px] font-bold tracking-[0.13em] text-white shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:bg-accent-glow hover:shadow-xl active:scale-95"
+					>
+						GET STARTED PORTAL
+						<span class="ml-1 transition-transform duration-200 group-hover:translate-x-1">→</span>
+					</a>
 				</div>
-
 			</div>
 
 			<!-- Right artwork -->
@@ -241,17 +257,17 @@
 					<img
 						src={logoUrl}
 						alt="SLV artwork"
-						class="relative z-10 max-h-[500px] w-[86%] object-contain drop-shadow-[0_24px_45px_rgba(120,72,0,0.18)] transition-transform duration-700 group-hover:-rotate-1 group-hover:scale-[1.025] dark:drop-shadow-[0_24px_55px_rgba(0,0,0,0.45)]"
+						class="relative z-10 max-h-[500px] w-[86%] object-contain drop-shadow-[0_24px_45px_rgba(120,72,0,0.18)] transition-transform duration-700 group-hover:scale-[1.025] group-hover:-rotate-1 dark:drop-shadow-[0_24px_55px_rgba(0,0,0,0.45)]"
 					/>
 				</div>
 
-				<div class="absolute bottom-16 right-2 hidden font-mono text-[8px] tracking-[0.25em] text-text-dim lg:block">
+				<div
+					class="absolute right-2 bottom-16 hidden font-mono text-[8px] tracking-[0.25em] text-text-dim lg:block"
+				>
 					Nodus Reasearch & Development
 				</div>
 			</div>
 		</div>
-
-
 	</section>
 	<div class="h-px w-full bg-border"></div>
 
@@ -357,9 +373,25 @@
 
 	<div class="h-px w-full bg-border"></div>
 
-	<section id="options" class="border-b border-border bg-bg px-3 py-12 md:px-5 lg:px-8" use:reveal={{ y: 40 }}>
+	<section
+		id="options"
+		class="border-b border-border bg-bg px-3 py-12 md:px-5 lg:px-8"
+		use:reveal={{ y: 40 }}
+	>
 		<div class="mx-auto max-w-[1600px]">
 			<OptionsDashboard />
+		</div>
+	</section>
+
+	<div class="h-px w-full bg-border"></div>
+
+	<section
+		id="macro"
+		class="relative border-b border-border bg-surface-2/20 px-3 py-12 md:px-5 lg:px-8"
+		use:reveal={{ y: 40 }}
+	>
+		<div class="relative z-10 mx-auto max-w-[1600px]">
+			<MacroDashboard />
 		</div>
 	</section>
 
@@ -415,7 +447,11 @@
 
 	<div class="h-px w-full bg-border"></div>
 
-	<section id="calendar" class="border-b border-border bg-surface-2/20 px-3 py-12 md:px-5 lg:px-8" use:reveal={{ y: 40 }}>
+	<section
+		id="calendar"
+		class="border-b border-border bg-surface-2/20 px-3 py-12 md:px-5 lg:px-8"
+		use:reveal={{ y: 40 }}
+	>
 		<div class="mx-auto max-w-[1600px]">
 			<div class="mb-5 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
 				<div>
@@ -447,14 +483,13 @@
 
 			<div class="flex items-center gap-6">
 				<a
-					href='https://pia.wign.dev/portal#api'
+					href="https://pia.wign.dev/portal#api"
 					class="text-sm font-medium text-text-muted transition-colors hover:text-text"
-				>Documentation</a
+					>Documentation</a
 				>
 				<a
-					href='https://pia.wign.dev/portal'
-					class="text-sm font-medium text-text-muted transition-colors hover:text-text"
-				>Portal</a
+					href="https://pia.wign.dev/portal"
+					class="text-sm font-medium text-text-muted transition-colors hover:text-text">Portal</a
 				>
 
 				<div

@@ -186,3 +186,90 @@ export interface OptionsGexItem {
 	total_gex: number;
 }
 
+export interface RateObservation {
+	source: string;
+	country: string;
+	tenor: string;
+	date: string;
+	value: number;
+	unit: string;
+	raw_series_id: string;
+	updated_at: string;
+}
+
+export interface RateSpreadObservation {
+	country: string;
+	spread: string;
+	date: string;
+	value: number;
+	updated_at: string;
+}
+
+export interface YieldCurveData {
+	country: string;
+	source: string;
+	date: string | null;
+	points: RateObservation[];
+	spreads: RateSpreadObservation[];
+	stale: boolean;
+	updated_at: string | null;
+}
+
+export interface FearGreedRecord {
+	id: string;
+	scope: string;
+	date: string;
+	score: number;
+	label: string;
+	components: Record<string, number>;
+	source_status: Record<string, string>;
+	created_at: string;
+}
+
+export interface FearGreedComponent {
+	name: string;
+	score: number | null;
+	base_weight: number;
+	status: string;
+	description: string;
+}
+
+export interface FearGreedComponentsResponse {
+	scope: string;
+	score: number;
+	label: string;
+	updated_at: string;
+	components: FearGreedComponent[];
+}
+
+export interface FearGreedHistoryResponse {
+	data: FearGreedRecord[];
+	scope: string;
+	total: number;
+}
+
+export interface MacroState {
+	loading: boolean;
+	yieldCurve: YieldCurveData | null;
+	fearGreed: FearGreedRecord | null;
+	fearGreedComponents: FearGreedComponentsResponse | null;
+	fearGreedHistory: FearGreedHistoryResponse | null;
+	errors: {
+		yieldCurve: string | null;
+		fearGreed: string | null;
+		history: string | null;
+	};
+	lastFetchedAt: string | null;
+}
+
+export const FEAR_GREED_COMPONENTS = [
+	'momentum',
+	'volatility',
+	'safe_haven',
+	'news_risk',
+	'positioning'
+] as const;
+
+export const YIELD_CURVE_TENORS = ['3M', '2Y', '5Y', '10Y', '30Y'] as const;
+
+export const YIELD_CONTEXT_TENORS = ['10Y_REAL', '10Y_BREAKEVEN'] as const;
