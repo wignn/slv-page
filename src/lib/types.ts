@@ -248,14 +248,54 @@ export interface FearGreedHistoryResponse {
 	total: number;
 }
 
+export interface BondSnapshot {
+	symbol: string;
+	name: string;
+	yield: number;
+	dayChange: number;
+	monthChange: number;
+	yearChange: number;
+	date: string;
+}
+
+export interface BondHistoryPoint {
+	date: string;
+	value: number;
+}
+
+export interface BondHistorySeries {
+	symbol: string;
+	name: string;
+	points: BondHistoryPoint[];
+}
+
+export interface ScrapedBondYieldCurve {
+	country: string;
+	source: string;
+	as_of: string;
+	fetched_at: string | null;
+	updated_at: string;
+	window: string;
+	window_from: string;
+	window_to: string;
+	stale: boolean;
+	history_available: boolean;
+	history_kind: 'provider' | 'unavailable' | string;
+	history_message: string | null;
+	bonds: BondSnapshot[];
+	history: BondHistorySeries[];
+}
+
 export interface MacroState {
 	loading: boolean;
 	yieldCurve: YieldCurveData | null;
+	scrapedBondCurve: ScrapedBondYieldCurve | null;
 	fearGreed: FearGreedRecord | null;
 	fearGreedComponents: FearGreedComponentsResponse | null;
 	fearGreedHistory: FearGreedHistoryResponse | null;
 	errors: {
 		yieldCurve: string | null;
+		scrapedBondCurve: string | null;
 		fearGreed: string | null;
 		history: string | null;
 	};
