@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { RefreshCw, AlertCircle, Activity, Database, TrendingUp } from 'lucide-svelte';
+	import { RefreshCw, AlertCircle, Database, TrendingUp, Sparkles, Layers } from 'lucide-svelte';
 	import { fetchMacroData, macroState } from '$lib/stores/macro';
 	import {
 		FEAR_GREED_COMPONENTS,
@@ -10,20 +10,20 @@
 	} from '$lib/types';
 
 	const TENOR_LABELS: Record<string, string> = {
-		'3M': '3 month',
-		'2Y': '2 year',
-		'5Y': '5 year',
-		'10Y': '10 year',
-		'30Y': '30 year',
-		'10Y_REAL': '10Y real',
-		'10Y_BREAKEVEN': '10Y breakeven'
+		'3M': '3 Month',
+		'2Y': '2 Year',
+		'5Y': '5 Year',
+		'10Y': '10 Year',
+		'30Y': '30 Year',
+		'10Y_REAL': '10Y Real Yield',
+		'10Y_BREAKEVEN': '10Y Breakeven'
 	};
 
 	const COMPONENT_LABELS: Record<string, string> = {
 		momentum: 'Momentum',
 		volatility: 'Volatility',
-		safe_haven: 'Safe haven',
-		news_risk: 'News risk',
+		safe_haven: 'Safe Haven',
+		news_risk: 'News Risk',
 		positioning: 'Positioning'
 	};
 
@@ -42,12 +42,14 @@
 			(point): point is RateObservation => point !== undefined
 		);
 	});
+
 	let contextPoints = $derived.by(() => {
 		const points = state.yieldCurve?.points ?? [];
 		return YIELD_CONTEXT_TENORS.map((tenor) =>
 			points.find((point) => point.tenor === tenor)
 		).filter((point): point is RateObservation => point !== undefined);
 	});
+
 	let spreadPoints = $derived(state.yieldCurve?.spreads ?? []);
 	let curveMin = $derived(
 		curvePoints.length ? Math.min(...curvePoints.map((point) => point.value)) : 0
@@ -55,7 +57,8 @@
 	let curveMax = $derived(
 		curvePoints.length ? Math.max(...curvePoints.map((point) => point.value)) : 1
 	);
-	let curveRange = $derived(Math.max(curveMax - curveMin, 0.5));
+	let curveRange = $derived(Math.max(curveMax - curveMin, 0.4));
+	
 	let curveShape = $derived.by(() => {
 		const short = curvePoints.find((point) => point.tenor === '3M')?.value;
 		const long = curvePoints.find((point) => point.tenor === '10Y')?.value;
@@ -67,23 +70,7 @@
 	let fearComponents = $derived(state.fearGreedComponents?.components ?? []);
 	let fearScore = $derived(state.fearGreedComponents?.score ?? fearRecord?.score ?? null);
 	let fearLabel = $derived(state.fearGreedComponents?.label ?? fearRecord?.label ?? 'neutral');
-	let availableComponentCount = $derived.by(() => {
-		const statuses = fearRecord?.source_status ?? {};
-		const listed =
-			fearComponents.length > 0
-				? fearComponents
-				: FEAR_GREED_COMPONENTS.map((name) => ({
-						name,
-						score: fearRecord?.components[name] ?? null,
-						base_weight: COMPONENT_WEIGHTS[name] ?? 0,
-						status:
-							statuses[name] ?? (fearRecord?.components[name] !== undefined ? 'ok' : 'missing'),
-						description: ''
-					}));
-		return listed.filter((component) => component.status === 'ok' && component.score !== null)
-			.length;
-	});
-	let hasMeaningfulFearSignal = $derived(availableComponentCount > 0);
+
 	let historyValues = $derived(state.fearGreedHistory?.data ?? []);
 	let historyPath = $derived.by(() => {
 		if (historyValues.length < 2) return '';
@@ -96,22 +83,51 @@
 			.join(' ');
 	});
 
-	function pointX(index: number, count: number): number {
-		return count <= 1 ? 360 : 40 + (index / (count - 1)) * 640;
+	const width = 760;
+	const height = 240;
+	const paddingX = 50;
+	const paddingY = 40;
+
+	function getX(index: number, count: number): number {
+		if (count <= 1) return width / 2;
+		return paddingX + (index / (count - 1)) * (width - paddingX * 2);
 	}
 
-	function pointY(value: number): number {
-		return 218 - ((value - curveMin) / curveRange) * 170;
+	function getY(value: number): number {
+		const normalized = (value - curveMin) / curveRange;
+		return height - paddingY - normalized * (height - paddingY * 2);
 	}
 
-	let curvePath = $derived.by(() =>
-		curvePoints
-			.map(
-				(point, index) =>
-					`${index === 0 ? 'M' : 'L'} ${pointX(index, curvePoints.length).toFixed(1)} ${pointY(point.value).toFixed(1)}`
-			)
-			.join(' ')
-	);
+	// Smooth cubic bezier spline
+	let splinePath = $derived.by(() => {
+		if (curvePoints.length === 0) return '';
+		const pts = curvePoints.map((p, i) => ({ x: getX(i, curvePoints.length), y: getY(p.value) }));
+		if (pts.length === 1) return `M ${pts[0].x} ${pts[0].y}`;
+		
+		let d = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
+		for (let i = 0; i < pts.length - 1; i++) {
+			const p0 = pts[Math.max(0, i - 1)];
+			const p1 = pts[i];
+			const p2 = pts[i + 1];
+			const p3 = pts[Math.min(pts.length - 1, i + 2)];
+
+			const cp1x = p1.x + (p2.x - p0.x) / 6;
+			const cp1y = p1.y + (p2.y - p0.y) / 6;
+			const cp2x = p2.x - (p3.x - p1.x) / 6;
+			const cp2y = p2.y - (p3.y - p1.y) / 6;
+
+			d += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
+		}
+		return d;
+	});
+
+	let areaPath = $derived.by(() => {
+		if (!splinePath || curvePoints.length === 0) return '';
+		const firstX = getX(0, curvePoints.length).toFixed(1);
+		const lastX = getX(curvePoints.length - 1, curvePoints.length).toFixed(1);
+		const bottomY = (height - paddingY).toFixed(1);
+		return `${splinePath} L ${lastX} ${bottomY} L ${firstX} ${bottomY} Z`;
+	});
 
 	function formatPercent(value: number | null | undefined, digits = 2): string {
 		return value === null || value === undefined || !Number.isFinite(value)
@@ -121,453 +137,262 @@
 
 	function formatSpread(value: number | null | undefined): string {
 		if (value === null || value === undefined || !Number.isFinite(value)) return '—';
-		return `${value > 0 ? '+' : ''}${value.toFixed(2)} pp`;
+		return `${value > 0 ? '+' : ''}${value.toFixed(2)}%`;
 	}
 
 	function spreadTone(value: number): string {
-		return value < 0 ? 'text-red' : value > 0 ? 'text-green' : 'text-text-muted';
+		return value < 0 ? 'text-red-400' : value > 0 ? 'text-emerald-400' : 'text-text-muted';
 	}
 
-	function formatDate(value: string | null | undefined, includeTime = false): string {
+	function formatDate(value: string | null | undefined): string {
 		if (!value) return 'Date unavailable';
 		const parsed = new Date(value);
 		if (Number.isNaN(parsed.getTime())) return 'Date unavailable';
-		const options: Intl.DateTimeFormatOptions = {
+		return new Intl.DateTimeFormat('en-US', {
 			timeZone: 'UTC',
 			month: 'short',
 			day: 'numeric',
 			year: 'numeric'
-		};
-		return new Intl.DateTimeFormat('en-US', {
-			...options,
-			...(includeTime ? { hour: 'numeric', minute: '2-digit' } : {})
 		}).format(parsed);
-	}
-
-	function displayLabel(value: string): string {
-		return value.replaceAll('_', ' ');
 	}
 
 	function scoreColor(score: number | null): string {
 		if (score === null) return 'text-text-dim';
-		if (score < 25) return 'text-red';
-		if (score < 45) return 'text-red/80';
+		if (score < 25) return 'text-red-400';
+		if (score < 45) return 'text-amber-400';
 		if (score < 55) return 'text-text-muted';
-		return score < 75 ? 'text-green/80' : 'text-green';
-	}
-
-	function componentRows(): FearGreedComponent[] {
-		const byName = new Map(fearComponents.map((component) => [component.name, component]));
-		const statuses = fearRecord?.source_status ?? {};
-		return FEAR_GREED_COMPONENTS.map(
-			(name) =>
-				byName.get(name) ?? {
-					name,
-					score: fearRecord?.components[name] ?? null,
-					base_weight: COMPONENT_WEIGHTS[name] ?? 0,
-					status: statuses[name] ?? (fearRecord?.components[name] !== undefined ? 'ok' : 'missing'),
-					description: ''
-				}
-		);
+		return score < 75 ? 'text-emerald-400' : 'text-emerald-300';
 	}
 </script>
 
-<div class="flex flex-col gap-5">
-	<div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+<div class="flex flex-col gap-6">
+	<!-- Section Header -->
+	<div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
 		<div>
-			<div class="flex items-center gap-3">
-				<h2 class="text-2xl font-black tracking-tight text-text">Macro signals</h2>
-				<span
-					class="rounded-md border border-accent/20 bg-accent/5 px-2.5 py-1 font-mono text-[11px] font-bold tracking-wide text-accent uppercase"
-					>Rates + risk</span
-				>
+			<div class="flex items-center gap-2.5">
+				<div class="flex h-7 w-7 items-center justify-center rounded-lg border border-accent/20 bg-accent/10">
+					<TrendingUp class="h-4 w-4 text-accent" />
+				</div>
+				<h2 class="text-xl font-bold tracking-tight text-text">Macro Intelligence & Yield Curve</h2>
+				<span class="rounded-full border border-border/80 bg-surface px-2.5 py-0.5 font-mono text-[10px] font-semibold text-text-muted">
+					US Treasuries
+				</span>
 			</div>
-			<p class="mt-1 max-w-2xl text-sm text-text-muted">
-				A daily read on the US Treasury curve and ATLSD's composite market mood.
+			<p class="mt-1 text-xs text-text-muted">
+				Institutional term structure, yield curve inversions, and cross-asset macroeconomic indicators.
 			</p>
 		</div>
-		<div class="flex items-center gap-3 text-xs text-text-dim">
-			{#if state.loading && (state.yieldCurve || state.fearGreed)}
-				<span class="flex items-center gap-1.5"
-					><RefreshCw class="h-3.5 w-3.5 animate-spin" />Refreshing</span
-				>
+
+		<div class="flex items-center gap-3">
+			{#if state.loading}
+				<span class="flex items-center gap-1.5 font-mono text-xs text-accent">
+					<RefreshCw class="h-3.5 w-3.5 animate-spin" /> Live Syncing
+				</span>
 			{/if}
 			<button
-				class="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 py-1.5 font-semibold text-text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:cursor-not-allowed disabled:opacity-50"
+				class="flex h-8 items-center gap-2 rounded-lg border border-border bg-surface px-3 text-xs font-semibold text-text-muted shadow-xs transition hover:bg-surface-2 hover:text-text disabled:opacity-50"
 				onclick={() => fetchMacroData()}
 				disabled={state.loading}
 			>
-				<RefreshCw class="h-3.5 w-3.5" /> Refresh
+				<RefreshCw class="h-3.5 w-3.5 {state.loading ? 'animate-spin' : ''}" />
+				<span>Refresh</span>
 			</button>
 		</div>
 	</div>
 
-	{#if state.loading && !state.yieldCurve && !state.fearGreed}
-		<div class="grid gap-5 xl:grid-cols-[minmax(0,1.3fr)_minmax(360px,0.7fr)]">
-			{#each [1, 2] as _}
-				<div class="h-[430px] animate-pulse rounded-xl border border-border/80 bg-surface"></div>
-			{/each}
+	<!-- Top Metrics Strip -->
+	<div class="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+		<div class="flex flex-col justify-between rounded-xl border border-border/70 bg-surface/80 p-3.5 backdrop-blur-sm shadow-xs">
+			<span class="text-[11px] font-medium tracking-wide text-text-muted">Curve Slope</span>
+			<div class="mt-2 flex items-baseline gap-2">
+				<span class="text-lg font-bold tracking-tight {curveShape === 'normal' ? 'text-emerald-400' : 'text-red-400'} capitalize">
+					{curveShape}
+				</span>
+				<span class="text-[10px] font-mono text-text-dim">
+					{curveShape === 'normal' ? 'Expansionary' : 'Recession Watch'}
+				</span>
+			</div>
+			<span class="mt-1 text-[10px] text-text-dim">3M vs 10Y maturity spread</span>
 		</div>
-	{:else}
-		<div class="grid gap-5 xl:grid-cols-[minmax(0,1.3fr)_minmax(360px,0.7fr)]">
-			<section class="overflow-hidden rounded-xl border border-border/80 bg-surface shadow-sm">
-				<div
-					class="flex flex-wrap items-start justify-between gap-3 border-b border-border/70 px-5 py-4"
-				>
-					<div>
-						<div class="flex items-center gap-2">
-							<TrendingUp class="h-4 w-4 text-blue" />
-							<h3 class="text-sm font-black tracking-wide text-text uppercase">
-								US Treasury yield curve
-							</h3>
-						</div>
-						<p class="mt-1 text-xs text-text-muted">
-							Nominal yields by maturity · source: {state.yieldCurve?.source ?? 'FRED'}
-						</p>
-					</div>
-					<div class="flex items-center gap-2">
-						{#if state.yieldCurve?.stale}<span
-								class="rounded border border-amber/30 bg-amber/10 px-2 py-1 font-mono text-[10px] font-bold tracking-wide text-amber uppercase"
-								>Stale dates</span
-							>{/if}
-						{#if curveShape === 'normal'}<span
-								class="rounded border border-green/20 bg-green/10 px-2 py-1 font-mono text-[10px] font-bold tracking-wide text-green uppercase"
-								>Normal slope</span
-							>{:else if curveShape === 'inverted'}<span
-								class="rounded border border-red/20 bg-red/10 px-2 py-1 font-mono text-[10px] font-bold tracking-wide text-red uppercase"
-								>Inverted slope</span
-							>{/if}
-					</div>
+
+		{#each spreadPoints as sp (sp.spread)}
+			<div class="flex flex-col justify-between rounded-xl border border-border/70 bg-surface/80 p-3.5 backdrop-blur-sm shadow-xs">
+				<span class="text-[11px] font-medium tracking-wide text-text-muted">Spread {sp.spread}</span>
+				<div class="mt-2 flex items-baseline gap-2">
+					<span class="font-mono text-lg font-bold tracking-tight {spreadTone(sp.value)}">
+						{formatSpread(sp.value)}
+					</span>
 				</div>
+				<span class="mt-1 text-[10px] text-text-dim">
+					{sp.value < 0 ? 'Inverted term spread' : 'Positive steepness'}
+				</span>
+			</div>
+		{/each}
 
-				{#if state.errors.yieldCurve && !state.yieldCurve}
-					<div class="m-5 rounded-lg border border-red/20 bg-red/10 p-4 text-sm text-red">
-						<div class="flex items-center gap-2 font-bold">
-							<AlertCircle class="h-4 w-4" /> Yield data unavailable
-						</div>
-						<p class="mt-1 text-xs text-red/80">{state.errors.yieldCurve}</p>
-						<button
-							class="mt-3 rounded-md border border-red/30 px-3 py-1.5 text-xs font-bold hover:bg-red/10"
-							onclick={() => fetchMacroData()}>Try again</button
-						>
-					</div>
-				{:else if curvePoints.length === 0}
-					<div
-						class="m-5 flex min-h-[300px] flex-col items-center justify-center rounded-lg border border-dashed border-border bg-surface-2/30 p-6 text-center"
-					>
-						<Database class="h-7 w-7 text-text-dim" />
-						<p class="mt-3 text-sm font-bold text-text-muted">No yield curve data yet</p>
-						<p class="mt-1 max-w-sm text-xs text-text-dim">
-							FRED has not returned a Treasury snapshot for this environment.
-						</p>
-					</div>
-				{:else}
-					<div class="px-4 pt-4 sm:px-5">
-						<div class="overflow-hidden rounded-lg border border-border/70 bg-bg/30">
-							<svg
-								viewBox="0 0 720 260"
-								class="h-[250px] w-full"
-								role="img"
-								aria-label="US Treasury nominal yield curve"
-								><line
-									x1="40"
-									y1="218"
-									x2="680"
-									y2="218"
-									stroke="currentColor"
-									stroke-opacity="0.22"
-								/><line
-									x1="40"
-									y1="48"
-									x2="680"
-									y2="48"
-									stroke="currentColor"
-									stroke-opacity="0.08"
-								/><line
-									x1="40"
-									y1="133"
-									x2="680"
-									y2="133"
-									stroke="currentColor"
-									stroke-opacity="0.08"
-								/><text x="8" y="53" fill="currentColor" opacity="0.5" font-size="10"
-									>{curveMax.toFixed(1)}%</text
-								><text x="8" y="138" fill="currentColor" opacity="0.5" font-size="10"
-									>{(curveMin + curveRange / 2).toFixed(1)}%</text
-								><text x="8" y="223" fill="currentColor" opacity="0.5" font-size="10"
-									>{curveMin.toFixed(1)}%</text
-								><path
-									d={curvePath}
-									fill="none"
-									stroke="var(--color-accent)"
-									stroke-width="3"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-								/>{#each curvePoints as point, index (point.tenor)}<circle
-										cx={pointX(index, curvePoints.length)}
-										cy={pointY(point.value)}
-										r="5"
-										fill="var(--color-surface)"
-										stroke="var(--color-accent)"
-										stroke-width="3"
-										><title>{TENOR_LABELS[point.tenor]}: {formatPercent(point.value)}</title
-										></circle
-									><text
-										x={pointX(index, curvePoints.length)}
-										y="244"
-										text-anchor="middle"
-										fill="currentColor"
-										opacity="0.65"
-										font-size="10">{point.tenor}</text
-									>{/each}</svg
-							>
-						</div>
-					</div>
-
-					<div class="grid grid-cols-2 gap-2 px-4 py-4 sm:grid-cols-5 sm:px-5">
-						{#each curvePoints as point (point.tenor)}<div
-								class="rounded-lg border border-border/70 bg-surface-2/40 px-3 py-2.5"
-							>
-								<p class="text-[10px] font-bold tracking-wide text-text-dim uppercase">
-									{point.tenor}
-								</p>
-								<p class="mt-1 font-mono text-sm font-black text-text">
-									{formatPercent(point.value)}
-								</p>
-								<p class="mt-0.5 text-[10px] text-text-dim">{formatDate(point.date)}</p>
-							</div>{/each}
-					</div>
-
-					<div class="border-t border-border/70 px-4 py-4 sm:px-5">
-						<div class="mb-3 flex items-center justify-between">
-							<div>
-								<p class="text-xs font-black tracking-wide text-text uppercase">Curve context</p>
-								<p class="mt-0.5 text-[11px] text-text-dim">
-									Real yield and inflation expectations are shown separately.
-								</p>
-							</div>
-							<span class="font-mono text-[10px] text-text-dim"
-								>{formatDate(state.yieldCurve?.date)}</span
-							>
-						</div>
-						<div class="grid gap-2 sm:grid-cols-2">
-							{#each contextPoints as point (point.tenor)}<div
-									class="flex items-center justify-between rounded-lg border border-border/70 bg-surface-2/30 px-3 py-2"
-								>
-									<span class="text-xs font-semibold text-text-muted"
-										>{TENOR_LABELS[point.tenor]}</span
-									><span class="font-mono text-sm font-bold text-text"
-										>{formatPercent(point.value)}</span
-									>
-								</div>{/each}{#if contextPoints.length === 0}<p class="text-xs text-text-dim">
-									No real yield or breakeven observations available.
-								</p>{/if}
-						</div>
-						<div class="mt-4 grid gap-2 sm:grid-cols-2" aria-label="Yield spreads">
-							{#each spreadPoints as spread (spread.spread)}<div
-									class="rounded-lg border border-border/70 bg-surface-2/30 px-3 py-2"
-								>
-									<div class="flex items-center justify-between gap-3">
-										<span class="text-xs font-semibold text-text-muted">{spread.spread}</span><span
-											class="font-mono text-sm font-bold {spreadTone(spread.value)}"
-											>{formatSpread(spread.value)}</span
-										>
-									</div>
-									<p class="mt-1 text-[10px] text-text-dim">
-										{spread.value < 0
-											? 'Inverted · long yield below short yield'
-											: 'Positive spread'}
-									</p>
-								</div>{/each}{#if spreadPoints.length === 0}<p class="text-xs text-text-dim">
-									No spread observations available.
-								</p>{/if}
-						</div>
-					</div>
-				{/if}
-				{#if state.errors.yieldCurve && state.yieldCurve}<p
-						class="border-t border-amber/20 bg-amber/5 px-5 py-2.5 text-xs text-amber"
-					>
-						{state.errors.yieldCurve}
-					</p>{/if}
-			</section>
-
-			<section class="overflow-hidden rounded-xl border border-border/80 bg-surface shadow-sm">
-				<div class="border-b border-border/70 px-5 py-4">
-					<div class="flex items-center justify-between gap-3">
-						<div class="flex items-center gap-2">
-							<Activity class="h-4 w-4 text-accent" />
-							<h3 class="text-sm font-black tracking-wide text-text uppercase">
-								Official Fear &amp; Greed
-							</h3>
-						</div>
-						<span
-							class="rounded border border-border bg-surface-2 px-2 py-1 font-mono text-[9px] font-bold tracking-wide text-text-dim uppercase"
-							>ATLSD composite</span
-						>
-					</div>
-					<p class="mt-1 text-xs text-text-muted">
-						A 0–100 score built from five market conditions.
-					</p>
+		{#each contextPoints as cp (cp.tenor)}
+			<div class="flex flex-col justify-between rounded-xl border border-border/70 bg-surface/80 p-3.5 backdrop-blur-sm shadow-xs">
+				<span class="text-[11px] font-medium tracking-wide text-text-muted">{TENOR_LABELS[cp.tenor]}</span>
+				<div class="mt-2 flex items-baseline gap-2">
+					<span class="font-mono text-lg font-bold tracking-tight text-text">
+						{formatPercent(cp.value)}
+					</span>
 				</div>
-				{#if state.errors.fearGreed && !fearRecord}
-					<div class="m-5 rounded-lg border border-red/20 bg-red/10 p-4 text-sm text-red">
-						<div class="flex items-center gap-2 font-bold">
-							<AlertCircle class="h-4 w-4" /> Fear &amp; Greed unavailable
-						</div>
-						<p class="mt-1 text-xs text-red/80">{state.errors.fearGreed}</p>
-						<button
-							class="mt-3 rounded-md border border-red/30 px-3 py-1.5 text-xs font-bold hover:bg-red/10"
-							onclick={() => fetchMacroData()}>Try again</button
-						>
-					</div>
-				{:else if !fearRecord && fearScore === null}
-					<div
-						class="m-5 flex min-h-[300px] flex-col items-center justify-center rounded-lg border border-dashed border-border bg-surface-2/30 p-6 text-center"
-					>
-						<Activity class="h-7 w-7 text-text-dim" />
-						<p class="mt-3 text-sm font-bold text-text-muted">Awaiting market mood data</p>
-						<p class="mt-1 text-xs text-text-dim">
-							The composite will appear when its source signals are ready.
-						</p>
-					</div>
-				{:else}
-					{@const score = fearScore ?? 50}
-					<div class="flex flex-col items-center px-5 pt-5">
-						<div class="relative h-[142px] w-[250px]">
-							<svg
-								viewBox="0 0 250 142"
-								class="h-full w-full overflow-visible"
-								role="img"
-								aria-label={`Fear and Greed score ${Math.round(score)} out of 100`}
-								><defs
-									><linearGradient id="macro-fear-gradient" x1="0%" y1="0%" x2="100%" y2="0%"
-										><stop offset="0%" stop-color="var(--color-red, #c85550)" /><stop
-											offset="50%"
-											stop-color="var(--color-text-dim, #8e8a81)"
-										/><stop
-											offset="100%"
-											stop-color="var(--color-green, #2f8f64)"
-										/></linearGradient
-									></defs
-								><path
-									d="M 28 124 A 97 97 0 0 1 222 124"
-									fill="none"
-									stroke="var(--color-surface-2, #eeece5)"
-									stroke-width="14"
-									stroke-linecap="round"
-								/><path
-									d="M 28 124 A 97 97 0 0 1 222 124"
-									fill="none"
-									stroke="url(#macro-fear-gradient)"
-									stroke-width="14"
-									stroke-linecap="round"
-								/><g
-									style={`transform: rotate(${(score / 100) * 180 - 90}deg); transform-origin: 125px 124px; transition: transform 700ms cubic-bezier(0.16, 1, 0.3, 1);`}
-									><path d="M 123 124 L 125 31 L 127 124 Z" fill="var(--color-text, #171716)" /></g
-								><circle cx="125" cy="124" r="8" fill="var(--color-text, #171716)" /><circle
-									cx="125"
-									cy="124"
-									r="3"
-									fill="var(--color-surface, #fffefa)"
-								/></svg
-							>
-							<div
-								class="absolute inset-x-0 bottom-0 flex justify-between px-5 font-mono text-[9px] font-bold tracking-wide text-text-dim uppercase"
-							>
-								<span>Fear</span><span>Neutral</span><span>Greed</span>
-							</div>
-						</div>
-						<div class="-mt-1 text-center">
-							<p class={`text-2xl font-black tracking-tight uppercase ${scoreColor(score)}`}>
-								{displayLabel(fearLabel)}
-							</p>
-							<p class="mt-1 font-mono text-sm font-bold text-text">
-								{Math.round(score)}<span class="text-text-dim"> / 100</span>
-							</p>
-							<p class="mt-1 text-[10px] text-text-dim">
-								As of {formatDate(state.fearGreedComponents?.updated_at ?? fearRecord?.date)}
-							</p>
-						</div>
-					</div>
-					<div class="mx-5 mt-4 rounded-lg border border-border/70 bg-surface-2/30 p-3">
-						<div class="flex items-center justify-between gap-3">
-							<p class="text-xs font-black tracking-wide text-text uppercase">Signal coverage</p>
-							<span
-								class={`font-mono text-xs font-bold ${hasMeaningfulFearSignal ? 'text-green' : 'text-amber'}`}
-								>{availableComponentCount}/5 sources ready</span
-							>
-						</div>
-						<div class="mt-2 h-1.5 overflow-hidden rounded-full bg-border/70">
-							<div
-								class="h-full rounded-full bg-accent transition-all"
-								style={`width: ${(availableComponentCount / 5) * 100}%`}
-							></div>
-						</div>
-						<p class="mt-2 text-[10px] leading-4 text-text-dim">
-							{hasMeaningfulFearSignal
-								? 'Missing sources are excluded and remaining weights are rebalanced.'
-								: 'The neutral fallback is not a directional signal until at least one source is ready.'}
-						</p>
-					</div>
-					<div class="mt-4 border-t border-border/70 px-5 pt-4 pb-5">
-						<div class="mb-3 flex items-center justify-between">
-							<p class="text-xs font-black tracking-wide text-text uppercase">Components</p>
-							{#if historyValues.length > 1}<svg
-									viewBox="0 0 200 66"
-									class="h-12 w-[150px]"
-									role="img"
-									aria-label="Fear and Greed history sparkline"
-									><line
-										x1="8"
-										y1="34"
-										x2="192"
-										y2="34"
-										stroke="currentColor"
-										stroke-opacity="0.12"
-									/><path
-										d={historyPath}
-										fill="none"
-										stroke="var(--color-accent)"
-										stroke-width="2"
-										stroke-linecap="round"
-										stroke-linejoin="round"
-									/></svg
-								>{/if}
-						</div>
-						<div class="flex flex-col gap-3">
-							{#each componentRows() as component (component.name)}<div
-									class:opacity-50={component.score === null}
-								>
-									<div class="flex items-center justify-between gap-3 text-xs">
-										<span class="font-semibold text-text-muted"
-											>{COMPONENT_LABELS[component.name] ?? displayLabel(component.name)}</span
-										><span class="font-mono font-bold {scoreColor(component.score)}"
-											>{component.score === null ? 'N/A' : component.score.toFixed(0)}
-											<span class="font-normal text-text-dim"
-												>· {(component.base_weight * 100).toFixed(0)}%</span
-											></span
-										>
-									</div>
-									<div class="mt-1.5 h-1.5 overflow-hidden rounded-full bg-border/60">
-										{#if component.score !== null}<div
-												class="h-full rounded-full bg-accent"
-												style={`width: ${component.score}%`}
-											></div>{/if}
-									</div>
-								</div>{/each}
-						</div>
-					</div>
-				{/if}
-				{#if state.errors.fearGreed && fearRecord}<p
-						class="border-t border-amber/20 bg-amber/5 px-5 py-2.5 text-xs text-amber"
-					>
-						{state.errors.fearGreed}
-					</p>{/if}
-			</section>
+				<span class="mt-1 text-[10px] text-text-dim">TIPS Market Benchmark</span>
+			</div>
+		{/each}
+	</div>
+
+	<!-- Main Yield Curve Chart & Cards -->
+	<div class="overflow-hidden rounded-xl border border-border/80 bg-surface shadow-xs">
+		<!-- Chart Header -->
+		<div class="flex flex-wrap items-center justify-between gap-3 border-b border-border/70 px-5 py-3.5 bg-surface-2/20">
+			<div class="flex items-center gap-2.5">
+				<span class="flex h-2 w-2 rounded-full bg-accent animate-pulse"></span>
+				<span class="text-xs font-bold tracking-wide uppercase text-text">US Treasury Benchmark Yield Curve</span>
+			</div>
+			<div class="flex items-center gap-4 text-xs">
+				<div class="flex items-center gap-1.5">
+					<span class="h-2 w-4 rounded-xs bg-accent"></span>
+					<span class="text-text-muted">Nominal Yield</span>
+				</div>
+				<div class="flex items-center gap-1.5 text-text-dim font-mono text-[11px]">
+					<span>Date: {formatDate(state.yieldCurve?.date)}</span>
+					<span>•</span>
+					<span>Source: FRED / Treasury.gov</span>
+				</div>
+			</div>
 		</div>
-	{/if}
 
-	{#if state.lastFetchedAt}<p class="text-right font-mono text-[10px] text-text-dim">
-			Updated {formatDate(state.lastFetchedAt, true)} UTC · backend data is refreshed periodically
-		</p>{/if}
+		{#if curvePoints.length === 0}
+			<div class="flex min-h-[300px] flex-col items-center justify-center p-8 text-center">
+				<Database class="h-8 w-8 text-text-dim" />
+				<p class="mt-2 text-sm font-semibold text-text-muted">No Yield Curve Data Available</p>
+			</div>
+		{:else}
+			<!-- Interactive SVG Yield Curve Graphic -->
+			<div class="relative px-6 pt-6 pb-2">
+				<svg viewBox="0 0 {width} {height}" class="h-[260px] w-full overflow-visible" role="img">
+					<defs>
+						<!-- Soft Gradient Fill -->
+						<linearGradient id="yieldAreaGrad" x1="0" y1="0" x2="0" y2="1">
+							<stop offset="0%" stop-color="var(--color-accent, #3b82f6)" stop-opacity="0.28" />
+							<stop offset="70%" stop-color="var(--color-accent, #3b82f6)" stop-opacity="0.04" />
+							<stop offset="100%" stop-color="var(--color-accent, #3b82f6)" stop-opacity="0.0" />
+						</linearGradient>
+						<!-- Subtle Grid Pattern -->
+						<linearGradient id="yieldLineGrad" x1="0" y1="0" x2="1" y2="0">
+							<stop offset="0%" stop-color="var(--color-accent, #3b82f6)" />
+							<stop offset="100%" stop-color="#60a5fa" />
+						</linearGradient>
+					</defs>
+
+					<!-- Y-Axis Grid Lines & Ticks -->
+					{#each [curveMax, curveMin + curveRange * 0.66, curveMin + curveRange * 0.33, curveMin] as tickValue}
+						{@const yPos = getY(tickValue)}
+						<line
+							x1={paddingX}
+							y1={yPos}
+							x2={width - paddingX}
+							y2={yPos}
+							stroke="currentColor"
+							stroke-opacity="0.07"
+							stroke-dasharray="3 3"
+						/>
+						<text
+							x={paddingX - 12}
+							y={yPos + 3.5}
+							text-anchor="end"
+							fill="currentColor"
+							class="text-[10px] font-mono fill-text-dim font-medium"
+						>
+							{tickValue.toFixed(2)}%
+						</text>
+					{/each}
+
+					<!-- Shaded Area Under Curve -->
+					<path d={areaPath} fill="url(#yieldAreaGrad)" />
+
+					<!-- Smooth Interpolated Yield Line -->
+					<path
+						d={splinePath}
+						fill="none"
+						stroke="url(#yieldLineGrad)"
+						stroke-width="2.75"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					/>
+
+					<!-- Yield Tenor Points & Circles -->
+					{#each curvePoints as point, i (point.tenor)}
+						{@const px = getX(i, curvePoints.length)}
+						{@const py = getY(point.value)}
+
+						<!-- Vertical drop dashed line -->
+						<line
+							x1={px}
+							y1={py}
+							x2={px}
+							y2={height - paddingY}
+							stroke="currentColor"
+							stroke-opacity="0.12"
+							stroke-dasharray="2 2"
+						/>
+
+						<!-- Glowing Halo Circle -->
+						<circle
+							cx={px}
+							cy={py}
+							r="5.5"
+							class="fill-surface stroke-accent"
+							stroke-width="2.5"
+						/>
+
+						<!-- Value Badge on Top of Point -->
+						<g transform="translate({px}, {py - 12})">
+							<rect
+								x="-21"
+								y="-14"
+								width="42"
+								height="17"
+								rx="4"
+								class="fill-surface-2/95 stroke-border/70"
+								stroke-width="1"
+							/>
+							<text
+								x="0"
+								y="-2.5"
+								text-anchor="middle"
+								class="fill-text font-mono text-[10.5px] font-bold"
+							>
+								{point.value.toFixed(2)}%
+							</text>
+						</g>
+
+						<!-- X-Axis Tenor Label -->
+						<text
+							x={px}
+							y={height - paddingY + 22}
+							text-anchor="middle"
+							class="fill-text-muted text-[11px] font-bold font-mono tracking-wider"
+						>
+							{point.tenor}
+						</text>
+					{/each}
+				</svg>
+			</div>
+
+			<!-- Detailed Tenor Metric Row -->
+			<div class="grid grid-cols-2 divide-x divide-y sm:grid-cols-5 border-t border-border/70 divide-border/60 bg-surface-2/10">
+				{#each curvePoints as pt (pt.tenor)}
+					<div class="flex flex-col px-4 py-3.5 transition hover:bg-surface-2/40">
+						<span class="text-[10px] font-bold tracking-wider uppercase text-text-dim">{TENOR_LABELS[pt.tenor]}</span>
+						<div class="mt-1 flex items-baseline justify-between">
+							<span class="font-mono text-base font-bold text-text">{formatPercent(pt.value)}</span>
+							<span class="text-[10px] font-mono text-text-dim">Maturity {pt.tenor}</span>
+						</div>
+					</div>
+				{/each}
+			</div>
+		{/if}
+	</div>
 </div>

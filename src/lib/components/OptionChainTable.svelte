@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { OptionsContract } from '$lib/types';
-	import { Calendar, Search } from 'lucide-svelte';
+	import { Calendar, Search, Filter, Layers, ArrowUpDown } from 'lucide-svelte';
 
 	interface Props {
 		contracts?: OptionsContract[];
@@ -84,7 +84,7 @@
 	);
 
 	function formatCurrency(val: number | null | undefined): string {
-		if (val === null || val === undefined || isNaN(val)) return '-';
+		if (val === null || val === undefined || isNaN(val)) return '—';
 		return new Intl.NumberFormat('en-US', {
 			style: 'currency',
 			currency: 'USD',
@@ -94,7 +94,7 @@
 	}
 
 	function formatCompact(val: number | null | undefined): string {
-		if (val === null || val === undefined || isNaN(val)) return '0';
+		if (val === null || val === undefined || isNaN(val)) return '—';
 		return new Intl.NumberFormat('en-US', {
 			notation: 'compact',
 			compactDisplay: 'short',
@@ -103,12 +103,12 @@
 	}
 
 	function formatGreek(val: number | null | undefined): string {
-		if (val === null || val === undefined || isNaN(val)) return '-';
+		if (val === null || val === undefined || isNaN(val)) return '—';
 		return val.toFixed(3);
 	}
 
 	function formatIv(val: number | null | undefined): string {
-		if (val === null || val === undefined || isNaN(val)) return '-';
+		if (val === null || val === undefined || isNaN(val)) return '—';
 		const pct = val <= 1 ? val * 100 : val;
 		return `${pct.toFixed(1)}%`;
 	}
@@ -127,12 +127,17 @@
 	}
 </script>
 
-<div class="flex flex-col rounded-lg border border-border bg-surface p-4 shadow-xs">
+<div class="flex flex-col rounded-xl border border-border/80 bg-surface shadow-xs overflow-hidden">
 	<!-- Header & Filters -->
-	<div class="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
-		<div>
-			<h3 class="text-sm font-semibold text-text">Option Chain & Greeks</h3>
-			<p class="text-xs text-text-muted">Filtered by expiration and strike</p>
+	<div class="flex flex-wrap items-center justify-between gap-3 border-b border-border/70 bg-surface-2/20 px-5 py-3.5">
+		<div class="flex items-center gap-2.5">
+			<div class="flex h-7 w-7 items-center justify-center rounded-lg border border-accent/20 bg-accent/10">
+				<Layers class="h-4 w-4 text-accent" />
+			</div>
+			<div>
+				<h3 class="text-xs font-bold tracking-wide uppercase text-text">Options Chain & Greeks Monitor</h3>
+				<p class="text-[11px] text-text-muted">Real-time strike ladder, greeks sensitivity, and open interest</p>
+			</div>
 		</div>
 
 		<!-- Filter Bar -->
@@ -144,14 +149,14 @@
 					type="text"
 					placeholder="Search strike..."
 					bind:value={searchQuery}
-					class="h-8 w-32 rounded-md border border-border bg-surface-2 pl-8 pr-2.5 text-xs text-text placeholder-text-muted focus:border-accent focus:outline-none"
+					class="h-8 w-32 rounded-lg border border-border bg-surface pl-8 pr-2.5 font-mono text-xs text-text placeholder-text-muted focus:border-accent focus:outline-none shadow-xs"
 				/>
 			</div>
 
 			<!-- Type Filter -->
 			<select
 				bind:value={selectedType}
-				class="h-8 rounded-md border border-border bg-surface-2 px-2 text-xs text-text focus:border-accent focus:outline-none"
+				class="h-8 rounded-lg border border-border bg-surface px-2.5 text-xs font-medium text-text focus:border-accent focus:outline-none shadow-xs"
 			>
 				<option value="all">All Types</option>
 				<option value="call">Calls Only</option>
@@ -163,7 +168,7 @@
 				<Calendar class="absolute left-2.5 h-3.5 w-3.5 pointer-events-none text-text-muted" />
 				<select
 					bind:value={selectedExpiration}
-					class="h-8 rounded-md border border-border bg-surface-2 pl-8 pr-2.5 text-xs text-text focus:border-accent focus:outline-none"
+					class="h-8 rounded-lg border border-border bg-surface pl-8 pr-3 text-xs font-medium text-text focus:border-accent focus:outline-none shadow-xs"
 				>
 					<option value="all">All Expirations ({expirationDates.length})</option>
 					{#each expirationDates as expDate}
@@ -175,29 +180,29 @@
 	</div>
 
 	<!-- Table Area -->
-	<div class="mt-3 overflow-x-auto">
+	<div class="overflow-x-auto">
 		<table class="w-full text-left text-xs">
-			<thead class="border-b border-border bg-surface-2 font-medium text-text-muted">
+			<thead class="border-b border-border/70 bg-surface-2/40 font-semibold text-text-muted text-[11px]">
 				<tr>
-					<th class="px-3 py-2">Strike</th>
-					<th class="px-3 py-2">Type</th>
-					<th class="px-3 py-2">Expiry</th>
-					<th class="px-3 py-2 text-right">Mark</th>
-					<th class="px-3 py-2 text-right">Bid / Ask</th>
-					<th class="px-3 py-2 text-right">IV</th>
-					<th class="px-3 py-2 text-right">Delta</th>
-					<th class="px-3 py-2 text-right">Gamma</th>
-					<th class="px-3 py-2 text-right">Theta</th>
-					<th class="px-3 py-2 text-right">Vega</th>
-					<th class="px-3 py-2 text-right">OI</th>
-					<th class="px-3 py-2 text-right">Volume</th>
-					<th class="px-3 py-2 text-right">GEX</th>
+					<th class="px-4 py-2.5">Strike</th>
+					<th class="px-3 py-2.5">Type</th>
+					<th class="px-3 py-2.5">Expiration</th>
+					<th class="px-3 py-2.5 text-right">Mark</th>
+					<th class="px-3 py-2.5 text-right">Bid / Ask</th>
+					<th class="px-3 py-2.5 text-right">IV</th>
+					<th class="px-3 py-2.5 text-right">Delta</th>
+					<th class="px-3 py-2.5 text-right">Gamma</th>
+					<th class="px-3 py-2.5 text-right">Theta</th>
+					<th class="px-3 py-2.5 text-right">Vega</th>
+					<th class="px-3 py-2.5 text-right">OI</th>
+					<th class="px-3 py-2.5 text-right">Vol</th>
+					<th class="px-4 py-2.5 text-right">GEX</th>
 				</tr>
 			</thead>
-			<tbody class="divide-y divide-border/60">
+			<tbody class="divide-y divide-border/50">
 				{#if sortedContracts.length === 0}
 					<tr>
-						<td colspan="13" class="px-3 py-8 text-center text-text-muted">
+						<td colspan="13" class="px-4 py-12 text-center text-text-muted">
 							No option contracts match selected filters.
 						</td>
 					</tr>
@@ -206,39 +211,39 @@
 						{@const isCall = getType(contract) === 'call'}
 						{@const itm = isItm(contract, underlyingPrice)}
 						<tr
-							class="transition-colors hover:bg-surface-2/60 {itm && isCall ? 'bg-green/5' : itm && !isCall ? 'bg-red/5' : ''}"
+							class="transition-colors hover:bg-surface-2/60 {itm && isCall ? 'bg-emerald-500/5' : itm && !isCall ? 'bg-rose-500/5' : ''}"
 						>
-							<td class="px-3 py-2 font-semibold text-text">
+							<td class="px-4 py-2 font-mono font-bold text-text">
 								${contract.strike}
 							</td>
 							<td class="px-3 py-2">
 								<span
-									class="inline-block rounded px-1.5 py-0.5 text-[10px] font-bold uppercase {isCall ? 'bg-green/15 text-green' : 'bg-red/15 text-red'}"
+									class="inline-block rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase font-mono {isCall ? 'bg-emerald-500/15 text-emerald-400' : 'bg-rose-500/15 text-rose-400'}"
 								>
 									{contract.option_type}
 								</span>
 							</td>
-							<td class="px-3 py-2 text-text-muted">{contract.expiration_date}</td>
-							<td class="px-3 py-2 text-right font-medium text-text">
+							<td class="px-3 py-2 text-text-muted font-mono text-[11px]">{contract.expiration_date}</td>
+							<td class="px-3 py-2 text-right font-mono font-semibold text-text">
 								{formatCurrency(contract.mark_price)}
 							</td>
-							<td class="px-3 py-2 text-right text-text-muted">
+							<td class="px-3 py-2 text-right font-mono text-text-dim text-[11px]">
 								{formatCurrency(contract.bid)} / {formatCurrency(contract.ask)}
 							</td>
-							<td class="px-3 py-2 text-right text-text">{formatIv(contract.implied_volatility)}</td>
-							<td class="px-3 py-2 text-right text-text">{formatGreek(contract.delta)}</td>
-							<td class="px-3 py-2 text-right text-text">{formatGreek(contract.gamma)}</td>
-							<td class="px-3 py-2 text-right text-text">{formatGreek(contract.theta)}</td>
-							<td class="px-3 py-2 text-right text-text">{formatGreek(contract.vega)}</td>
-							<td class="px-3 py-2 text-right text-text-muted">{formatCompact(contract.open_interest)}</td>
-							<td class="px-3 py-2 text-right text-text-muted">{formatCompact(contract.volume)}</td>
+							<td class="px-3 py-2 text-right font-mono text-text">{formatIv(contract.implied_volatility)}</td>
+							<td class="px-3 py-2 text-right font-mono text-text">{formatGreek(contract.delta)}</td>
+							<td class="px-3 py-2 text-right font-mono text-text">{formatGreek(contract.gamma)}</td>
+							<td class="px-3 py-2 text-right font-mono text-text">{formatGreek(contract.theta)}</td>
+							<td class="px-3 py-2 text-right font-mono text-text">{formatGreek(contract.vega)}</td>
+							<td class="px-3 py-2 text-right font-mono text-text-muted">{formatCompact(contract.open_interest)}</td>
+							<td class="px-3 py-2 text-right font-mono text-text-muted">{formatCompact(contract.volume)}</td>
 							<td
-								class="px-3 py-2 text-right font-medium"
-								class:text-green={contract.gex > 0}
-								class:text-red={contract.gex < 0}
+								class="px-4 py-2 text-right font-mono font-semibold"
+								class:text-emerald-400={contract.gex > 0}
+								class:text-rose-400={contract.gex < 0}
 								class:text-text-muted={contract.gex === 0}
 							>
-								{formatCompact(contract.gex)}
+								{formatCurrency(contract.gex)}
 							</td>
 						</tr>
 					{/each}

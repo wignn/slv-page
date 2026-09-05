@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { OptionsSnapshot } from '$lib/types';
+	import { DollarSign, Percent, BarChart3, Zap, Layers, AlertCircle } from 'lucide-svelte';
 
 	interface Props {
 		snapshot?: OptionsSnapshot | null;
@@ -49,75 +50,96 @@
 
 <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
 	<!-- Underlying Price -->
-	<div class="flex flex-col rounded-lg border border-border bg-surface p-3.5 shadow-sm">
-		<span class="text-xs font-medium tracking-wide text-text-muted">Underlying price</span>
-		<div class="mt-2 text-lg font-bold tracking-tight text-text">
+	<div class="flex flex-col justify-between rounded-xl border border-border/80 bg-surface p-3.5 shadow-xs transition hover:border-border">
+		<div class="flex items-center justify-between">
+			<span class="text-[11px] font-medium tracking-wide text-text-muted">Underlying</span>
+			<span class="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-[10px] font-bold text-text-dim uppercase">
+				{currentSnapshot?.symbol ?? '—'}
+			</span>
+		</div>
+		<div class="mt-2 text-xl font-bold tracking-tight text-text font-mono">
 			{formatCurrency(currentSnapshot?.underlying_price)}
 		</div>
-		<div class="mt-1 text-xs text-text-dim">
-			{currentSnapshot?.symbol ?? 'N/A'}
+		<div class="mt-1 flex items-center gap-1.5 text-[10px] text-text-dim">
+			<span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+			<span>Live Cash Price</span>
 		</div>
 	</div>
 
 	<!-- Put / Call Ratio -->
-	<div class="flex flex-col rounded-lg border border-border bg-surface p-3.5 shadow-sm">
-		<span class="text-xs font-medium tracking-wide text-text-muted">Put / call ratio</span>
-		<div class="mt-2 text-lg font-bold tracking-tight text-text">
+	<div class="flex flex-col justify-between rounded-xl border border-border/80 bg-surface p-3.5 shadow-xs transition hover:border-border">
+		<div class="flex items-center justify-between">
+			<span class="text-[11px] font-medium tracking-wide text-text-muted">PCR (Put/Call)</span>
+			<span class="text-[10px] font-semibold text-text-dim">Volume/OI</span>
+		</div>
+		<div class="mt-2 text-xl font-bold tracking-tight text-text font-mono">
 			{currentSnapshot?.put_call_ratio !== undefined && currentSnapshot?.put_call_ratio !== null
 				? currentSnapshot.put_call_ratio.toFixed(2)
 				: '0.00'}
 		</div>
-		<div class="mt-1 text-xs text-text-dim">
+		<div class="mt-1 text-[10px] font-semibold">
 			{#if (currentSnapshot?.put_call_ratio ?? 0) > 1}
-				Bearish tilt
+				<span class="text-red-400">Bearish Sentiment</span>
 			{:else if (currentSnapshot?.put_call_ratio ?? 0) > 0}
-				Bullish tilt
+				<span class="text-emerald-400">Bullish Sentiment</span>
 			{:else}
-				Neutral
+				<span class="text-text-muted">Neutral Equilibrium</span>
 			{/if}
 		</div>
 	</div>
 
 	<!-- Max Pain Strike -->
-	<div class="flex flex-col rounded-lg border border-border bg-surface p-3.5 shadow-sm">
-		<span class="text-xs font-medium tracking-wide text-text-muted">Max pain strike</span>
-		<div class="mt-2 text-lg font-bold tracking-tight text-text">
+	<div class="flex flex-col justify-between rounded-xl border border-border/80 bg-surface p-3.5 shadow-xs transition hover:border-border">
+		<div class="flex items-center justify-between">
+			<span class="text-[11px] font-medium tracking-wide text-text-muted">Max Pain Strike</span>
+			<span class="text-[10px] font-semibold text-text-dim">Anchor</span>
+		</div>
+		<div class="mt-2 text-xl font-bold tracking-tight text-text font-mono">
 			{formatCurrency(currentSnapshot?.max_pain_strike)}
 		</div>
-		<div class="mt-1 text-xs text-text-dim">Expiry concentration</div>
+		<div class="mt-1 text-[10px] text-text-dim">Expiry Magnet Level</div>
 	</div>
 
 	<!-- ATM IV -->
-	<div class="flex flex-col rounded-lg border border-border bg-surface p-3.5 shadow-sm">
-		<span class="text-xs font-medium tracking-wide text-text-muted">ATM IV</span>
-		<div class="mt-2 text-lg font-bold tracking-tight text-text">
+	<div class="flex flex-col justify-between rounded-xl border border-border/80 bg-surface p-3.5 shadow-xs transition hover:border-border">
+		<div class="flex items-center justify-between">
+			<span class="text-[11px] font-medium tracking-wide text-text-muted">ATM Volatility</span>
+			<span class="text-[10px] font-semibold text-text-dim">IV</span>
+		</div>
+		<div class="mt-2 text-xl font-bold tracking-tight text-text font-mono">
 			{formatPercent(currentSnapshot?.iv_atm)}
 		</div>
-		<div class="mt-1 text-xs text-text-dim">Implied volatility</div>
+		<div class="mt-1 text-[10px] text-text-dim">Implied Pricing Vol</div>
 	</div>
 
 	<!-- Total OI & Volume -->
-	<div class="flex flex-col rounded-lg border border-border bg-surface p-3.5 shadow-sm">
-		<span class="text-xs font-medium tracking-wide text-text-muted">Total OI / volume</span>
-		<div class="mt-2 text-lg font-bold tracking-tight text-text">
+	<div class="flex flex-col justify-between rounded-xl border border-border/80 bg-surface p-3.5 shadow-xs transition hover:border-border">
+		<div class="flex items-center justify-between">
+			<span class="text-[11px] font-medium tracking-wide text-text-muted">Total OI / Vol</span>
+			<span class="text-[10px] font-semibold text-text-dim">Contracts</span>
+		</div>
+		<div class="mt-2 text-xl font-bold tracking-tight text-text font-mono">
 			{formatCompact(currentSnapshot?.total_open_interest)} / {formatCompact(
 				currentSnapshot?.total_volume
 			)}
 		</div>
-		<div class="mt-1 text-xs text-text-dim">Contracts</div>
+		<div class="mt-1 text-[10px] text-text-dim">Aggregate Liquidity</div>
 	</div>
 
 	<!-- Total Dollar GEX -->
-	<div class="flex flex-col rounded-lg border border-border bg-surface p-3.5 shadow-sm">
-		<span class="text-xs font-medium tracking-wide text-text-muted">Total dollar GEX</span>
+	<div class="flex flex-col justify-between rounded-xl border border-border/80 bg-surface p-3.5 shadow-xs transition hover:border-border">
+		<div class="flex items-center justify-between">
+			<span class="text-[11px] font-medium tracking-wide text-text-muted">Net Dollar GEX</span>
+			<span class="text-[10px] font-semibold text-text-dim">Gamma</span>
+		</div>
 		<div
-			class="mt-2 text-lg font-bold tracking-tight"
-			class:text-green={(currentSnapshot?.total_gex ?? 0) > 0}
-			class:text-red={(currentSnapshot?.total_gex ?? 0) < 0}
+			class="mt-2 text-xl font-bold tracking-tight font-mono"
+			class:text-emerald-400={(currentSnapshot?.total_gex ?? 0) > 0}
+			class:text-red-400={(currentSnapshot?.total_gex ?? 0) < 0}
 			class:text-text={(currentSnapshot?.total_gex ?? 0) === 0}
 		>
 			{formatGex(currentSnapshot?.total_gex)}
 		</div>
-		<div class="mt-1 text-xs text-text-dim">Gamma exposure</div>
+		<div class="mt-1 text-[10px] text-text-dim">Market Maker Exposure</div>
 	</div>
 </div>
