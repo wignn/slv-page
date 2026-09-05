@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { OptionsSnapshot } from '$lib/types';
-	import { TrendingUp, PieChart, Target, Activity, BarChart3, Zap } from 'lucide-svelte';
 
 	interface Props {
 		snapshot?: OptionsSnapshot | null;
@@ -50,35 +49,29 @@
 
 <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
 	<!-- Underlying Price -->
-	<div class="flex flex-col rounded-lg border border-border bg-surface p-3.5 shadow-xs">
-		<div class="flex items-center justify-between text-text-muted">
-			<span class="text-xs font-medium tracking-wide">Underlying Price</span>
-			<TrendingUp class="h-4 w-4 text-accent" />
-		</div>
+	<div class="flex flex-col rounded-lg border border-border bg-surface p-3.5 shadow-sm">
+		<span class="text-xs font-medium tracking-wide text-text-muted">Underlying price</span>
 		<div class="mt-2 text-lg font-bold tracking-tight text-text">
 			{formatCurrency(currentSnapshot?.underlying_price)}
 		</div>
-		<div class="mt-1 text-xs text-text-muted">
+		<div class="mt-1 text-xs text-text-dim">
 			{currentSnapshot?.symbol ?? 'N/A'}
 		</div>
 	</div>
 
 	<!-- Put / Call Ratio -->
-	<div class="flex flex-col rounded-lg border border-border bg-surface p-3.5 shadow-xs">
-		<div class="flex items-center justify-between text-text-muted">
-			<span class="text-xs font-medium tracking-wide">Put / Call Ratio</span>
-			<PieChart class="h-4 w-4 text-accent" />
-		</div>
+	<div class="flex flex-col rounded-lg border border-border bg-surface p-3.5 shadow-sm">
+		<span class="text-xs font-medium tracking-wide text-text-muted">Put / call ratio</span>
 		<div class="mt-2 text-lg font-bold tracking-tight text-text">
 			{currentSnapshot?.put_call_ratio !== undefined && currentSnapshot?.put_call_ratio !== null
 				? currentSnapshot.put_call_ratio.toFixed(2)
 				: '0.00'}
 		</div>
-		<div class="mt-1 text-xs text-text-muted">
+		<div class="mt-1 text-xs text-text-dim">
 			{#if (currentSnapshot?.put_call_ratio ?? 0) > 1}
-				<span class="text-amber">Bearish sentiment</span>
+				Bearish tilt
 			{:else if (currentSnapshot?.put_call_ratio ?? 0) > 0}
-				<span class="text-green">Bullish sentiment</span>
+				Bullish tilt
 			{:else}
 				Neutral
 			{/if}
@@ -86,47 +79,37 @@
 	</div>
 
 	<!-- Max Pain Strike -->
-	<div class="flex flex-col rounded-lg border border-border bg-surface p-3.5 shadow-xs">
-		<div class="flex items-center justify-between text-text-muted">
-			<span class="text-xs font-medium tracking-wide">Max Pain Strike</span>
-			<Target class="h-4 w-4 text-accent" />
-		</div>
+	<div class="flex flex-col rounded-lg border border-border bg-surface p-3.5 shadow-sm">
+		<span class="text-xs font-medium tracking-wide text-text-muted">Max pain strike</span>
 		<div class="mt-2 text-lg font-bold tracking-tight text-text">
 			{formatCurrency(currentSnapshot?.max_pain_strike)}
 		</div>
-		<div class="mt-1 text-xs text-text-muted">Expiry concentration</div>
+		<div class="mt-1 text-xs text-text-dim">Expiry concentration</div>
 	</div>
 
 	<!-- ATM IV -->
-	<div class="flex flex-col rounded-lg border border-border bg-surface p-3.5 shadow-xs">
-		<div class="flex items-center justify-between text-text-muted">
-			<span class="text-xs font-medium tracking-wide">ATM IV</span>
-			<Activity class="h-4 w-4 text-accent" />
-		</div>
+	<div class="flex flex-col rounded-lg border border-border bg-surface p-3.5 shadow-sm">
+		<span class="text-xs font-medium tracking-wide text-text-muted">ATM IV</span>
 		<div class="mt-2 text-lg font-bold tracking-tight text-text">
 			{formatPercent(currentSnapshot?.iv_atm)}
 		</div>
-		<div class="mt-1 text-xs text-text-muted">Implied Volatility</div>
+		<div class="mt-1 text-xs text-text-dim">Implied volatility</div>
 	</div>
 
 	<!-- Total OI & Volume -->
-	<div class="flex flex-col rounded-lg border border-border bg-surface p-3.5 shadow-xs">
-		<div class="flex items-center justify-between text-text-muted">
-			<span class="text-xs font-medium tracking-wide">Total OI / Volume</span>
-			<BarChart3 class="h-4 w-4 text-accent" />
-		</div>
+	<div class="flex flex-col rounded-lg border border-border bg-surface p-3.5 shadow-sm">
+		<span class="text-xs font-medium tracking-wide text-text-muted">Total OI / volume</span>
 		<div class="mt-2 text-lg font-bold tracking-tight text-text">
-			{formatCompact(currentSnapshot?.total_open_interest)} / {formatCompact(currentSnapshot?.total_volume)}
+			{formatCompact(currentSnapshot?.total_open_interest)} / {formatCompact(
+				currentSnapshot?.total_volume
+			)}
 		</div>
-		<div class="mt-1 text-xs text-text-muted">Contracts</div>
+		<div class="mt-1 text-xs text-text-dim">Contracts</div>
 	</div>
 
 	<!-- Total Dollar GEX -->
-	<div class="flex flex-col rounded-lg border border-border bg-surface p-3.5 shadow-xs">
-		<div class="flex items-center justify-between text-text-muted">
-			<span class="text-xs font-medium tracking-wide">Total Dollar GEX</span>
-			<Zap class="h-4 w-4 text-accent" />
-		</div>
+	<div class="flex flex-col rounded-lg border border-border bg-surface p-3.5 shadow-sm">
+		<span class="text-xs font-medium tracking-wide text-text-muted">Total dollar GEX</span>
 		<div
 			class="mt-2 text-lg font-bold tracking-tight"
 			class:text-green={(currentSnapshot?.total_gex ?? 0) > 0}
@@ -135,6 +118,6 @@
 		>
 			{formatGex(currentSnapshot?.total_gex)}
 		</div>
-		<div class="mt-1 text-xs text-text-muted">Gamma Exposure</div>
+		<div class="mt-1 text-xs text-text-dim">Gamma exposure</div>
 	</div>
 </div>

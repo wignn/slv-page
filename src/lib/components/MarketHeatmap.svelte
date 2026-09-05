@@ -1,10 +1,9 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { Search, ArrowUpRight, ArrowDownRight, TrendingUp, TrendingDown } from 'lucide-svelte';
+	import { Search } from 'lucide-svelte';
 	import { marketStore } from '$lib/stores/websocket.svelte';
 	import type { PriceData } from '$lib/types';
 	import { apiFetch } from '$lib/api';
-	import { getLocalLogo } from '$lib/logo';
+	import { getSymbolMeta, getAssetCategory } from '$lib/symbol-meta';
 
 	interface Props {
 		onselect: (symbol: string) => void;
@@ -31,176 +30,11 @@
 		{ id: 'crypto', name: 'Crypto' },
 		{ id: 'commodities', name: 'Commodities' }
 	];
-	const marketCategoryIds = categories.filter((cat) => cat.id !== 'all').map((cat) => cat.id);
 
-	function getAssetCategory(item: PriceData): string {
-		const assetType = (item.asset_type ?? '').toLowerCase();
-		if (['stock', 'stocks', 'equity', 'saham'].includes(assetType)) return 'stocks';
-		if (['forex', 'fx', 'currency'].includes(assetType)) return 'forex';
-		if (['index', 'indices', 'global_index'].includes(assetType)) return 'indices';
-		if (['crypto', 'cryptocurrency'].includes(assetType)) return 'crypto';
-		if (['commodity', 'commodities', 'metal', 'energy'].includes(assetType)) return 'commodities';
-
-		const sym = item.symbol.toUpperCase();
-		if (sym.endsWith('USDT')) return 'crypto';
-		if (sym === 'XAUUSD' || sym.startsWith('XAU')) return 'commodities';
-		if (/^[A-Z]{6}$/.test(sym)) return 'forex';
-		return 'stocks';
-	}
-
-	function getCategoryName(cat: string): string {
-		if (cat === 'stocks') return 'Stocks & Bursa';
-		if (cat === 'crypto') return 'Cryptocurrency';
-		if (cat === 'forex') return 'Forex (Currencies)';
-		if (cat === 'indices') return 'Global Indices';
-		if (cat === 'commodities') return 'Commodities & Metals';
-		return 'Other Markets';
-	}
-
-	// Ticker Metadata and Details
 	function getSymbolDetails(itemOrSymbol: PriceData | string) {
-		const symbol = typeof itemOrSymbol === 'string' ? itemOrSymbol : itemOrSymbol.symbol;
-		const category =
-			typeof itemOrSymbol === 'string'
-				? getAssetCategory({ symbol, asset_type: '', price: 0 } as PriceData)
-				: getAssetCategory(itemOrSymbol);
-		const sym = symbol.toUpperCase();
-		let name = sym;
-		let badge = sym.substring(0, 4);
-		let badgeColor = 'bg-accent/10 text-accent border border-accent/20';
-		let unit =
-			category === 'forex'
-				? 'RATE'
-				: category === 'stocks'
-					? 'EQTY'
-					: category === 'indices'
-						? 'IDX'
-						: 'USD';
-		let format = (val: number) => formatPrice(val, category, sym);
-		let logo = { type: 'svg', url: '' };
-		let displaySymbol = sym;
-
-		if (sym === 'BTCUSDT') {
-			name = 'Bitcoin';
-			badge = 'BTC';
-			badgeColor = 'bg-[#F7931A]/10 text-[#F7931A] border border-[#F7931A]/20';
-			unit = 'USD';
-			format = (val: number) =>
-				val.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-			logo = { type: 'img', url: 'https://assets.coincap.io/assets/icons/btc@2x.png' };
-		} else if (sym === 'ETHUSDT') {
-			name = 'Ethereum';
-			badge = 'ETH';
-			badgeColor = 'bg-[#627EEA]/10 text-[#627EEA] border border-[#627EEA]/20';
-			unit = 'USD';
-			format = (val: number) =>
-				val.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-			logo = { type: 'img', url: 'https://assets.coincap.io/assets/icons/eth@2x.png' };
-		} else if (sym === 'SOLUSDT') {
-			name = 'Solana';
-			badge = 'SOL';
-			badgeColor = 'bg-[#14F195]/10 text-[#14F195] border border-[#14F195]/20';
-			unit = 'USD';
-			format = (val: number) => val.toFixed(2);
-			logo = { type: 'img', url: 'https://assets.coincap.io/assets/icons/sol@2x.png' };
-		} else if (sym === 'BNBUSDT') {
-			name = 'BNB';
-			badge = 'BNB';
-			badgeColor = 'bg-[#F3BA2F]/10 text-[#F3BA2F] border border-[#F3BA2F]/20';
-			unit = 'USD';
-			format = (val: number) => val.toFixed(1);
-			logo = { type: 'img', url: 'https://assets.coincap.io/assets/icons/bnb@2x.png' };
-		} else if (sym === 'PAXGUSDT') {
-			name = 'PAX Gold';
-			badge = 'PAXG';
-			displaySymbol = 'PAXG';
-			badgeColor = 'bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/20';
-			unit = 'USD';
-			format = (val: number) =>
-				val.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-			logo = { type: 'svg', url: '' };
-		} else if (sym === 'EURUSD') {
-			name = 'Euro / USD';
-			badge = 'EUR';
-			badgeColor = 'bg-[#003399]/10 text-[#003399] border border-[#003399]/20';
-			unit = 'RATE';
-			format = (val: number) => val.toFixed(5);
-			logo = { type: 'img', url: 'https://flagcdn.com/w80/eu.png' };
-		} else if (sym === 'GBPUSD') {
-			name = 'GBP / USD';
-			badge = 'GBP';
-			badgeColor = 'bg-[#C8102E]/10 text-[#C8102E] border border-[#C8102E]/20';
-			unit = 'RATE';
-			format = (val: number) => val.toFixed(5);
-			logo = { type: 'img', url: 'https://flagcdn.com/w80/gb.png' };
-		} else if (sym === 'USDJPY') {
-			name = 'USD / Yen';
-			badge = 'JPY';
-			badgeColor = 'bg-[#BC002D]/10 text-[#BC002D] border border-[#BC002D]/20';
-			unit = 'JPY';
-			format = (val: number) => val.toFixed(3);
-			logo = { type: 'img', url: 'https://flagcdn.com/w80/jp.png' };
-		} else if (sym === 'XAUUSD') {
-			name = 'Gold Spot';
-			badge = 'GOLD';
-			badgeColor = 'bg-[#FFD700]/10 text-[#FFD700] border border-[#FFD700]/20';
-			unit = 'USD';
-			format = (val: number) =>
-				val.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-		} else if (sym === 'SPX') {
-			name = 'S&P 500';
-			badge = 'SPX';
-			badgeColor = 'bg-blue-600/10 text-blue-600 border border-blue-600/20';
-			unit = 'USD';
-			format = (val: number) =>
-				val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-		} else if (sym === 'DXY') {
-			name = 'US Dollar Index';
-			badge = 'DXY';
-			badgeColor = 'bg-emerald-600/10 text-emerald-600 border border-[#10B981]/20';
-			unit = 'RATE';
-			format = (val: number) => val.toFixed(3);
-		} else if (category === 'stocks') {
-			name = `${sym} Equity`;
-			badge = sym.slice(0, 4);
-			badgeColor = 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20';
-			unit = 'USD';
-		} else if (category === 'indices') {
-			name = `${sym} Index`;
-			badge = sym.slice(0, 5);
-			badgeColor = 'bg-violet-500/10 text-violet-400 border border-violet-500/20';
-			unit = 'INDEX';
-		} else if (category === 'forex') {
-			name = sym.length === 6 ? `${sym.slice(0, 3)} / ${sym.slice(3)}` : sym;
-			badge = sym.slice(0, 3);
-			badgeColor = 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
-			unit = 'RATE';
-		}
-
-		// Prioritize local logo over any fallback URL defined above
-		const localLogoUrl = getLocalLogo(sym);
-		if (localLogoUrl) {
-			logo = { type: 'img', url: localLogoUrl };
-		}
-
-		return { name, badge, badgeColor, unit, format, logo, displaySymbol };
+		return getSymbolMeta(typeof itemOrSymbol === 'string' ? itemOrSymbol : itemOrSymbol.symbol);
 	}
 
-	function formatPrice(val: number, category: string, symbol: string): string {
-		if (category === 'crypto') {
-			return val.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
-		}
-		if (category === 'stocks' || category === 'indices') {
-			return val.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
-		}
-		if (category === 'forex') {
-			if (symbol.includes('JPY')) return val.toFixed(3);
-			if (symbol.includes('IDR'))
-				return val.toLocaleString(undefined, { maximumFractionDigits: 2 });
-			return val.toFixed(5);
-		}
-		return val.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 2 });
-	}
 
 	// Capture initial prices for performance tracking
 	$effect(() => {
@@ -596,62 +430,54 @@
 		textColor: string;
 	}
 
+	// Diverging scale: red (down) <-> neutral gray (flat) <-> green (up).
+	// Continuous interpolation, clamped at +/-3% so extremes saturate cleanly.
+	function lerp(a: number, b: number, t: number): number {
+		return Math.round(a + (b - a) * t);
+	}
+
+	function mixHex(from: [number, number, number], to: [number, number, number], t: number): string {
+		const r = lerp(from[0], to[0], t);
+		const g = lerp(from[1], to[1], t);
+		const b = lerp(from[2], to[2], t);
+		return `rgb(${r}, ${g}, ${b})`;
+	}
+
+	// Poles + neutral midpoint (dark-surface friendly steps).
+	const DOWN_POLE: [number, number, number] = [176, 68, 64]; // #b04440
+	const UP_POLE: [number, number, number] = [40, 122, 82]; // #287a52
+	const NEUTRAL: [number, number, number] = [120, 118, 110]; // warm gray
+
 	function getCellStyles(pctVal: number, isSelected: boolean): CellStyle {
-		let bg = '';
-		let border = '';
-		let shadow = '';
-		let text = 'text-white';
+		const clamped = Math.max(-3, Math.min(3, pctVal));
+		const t = Math.abs(clamped) / 3; // 0 at flat, 1 at extreme
+		const bg =
+			clamped > 0 ? mixHex(NEUTRAL, UP_POLE, t) : clamped < 0 ? mixHex(NEUTRAL, DOWN_POLE, t) : 'rgb(120, 118, 110)';
 
-		// TradingView Heatmap Colors (Solid flat colors matching the TV scale exactly)
-		if (pctVal > 0) {
-			if (pctVal >= 3.0) {
-				bg = '#0a5c36'; // Strongly Positive (Dark Forest Green)
-			} else if (pctVal >= 1.0) {
-				bg = '#089981'; // Moderately Positive (TradingView Emerald Green)
-			} else if (pctVal >= 0.25) {
-				bg = '#2ca880'; // Slightly Positive (Medium Green)
-			} else {
-				bg = '#4ca885'; // Very Slightly Positive (Soft Green)
-			}
-		} else if (pctVal < 0) {
-			if (pctVal <= -3.0) {
-				bg = '#781212'; // Strongly Negative (Dark Maroon Red)
-			} else if (pctVal <= -1.5) {
-				bg = '#f23645'; // Moderately Negative (TradingView Crimson Red)
-			} else if (pctVal <= -0.5) {
-				bg = '#e03c4c'; // Slightly Negative (Medium Red)
-			} else {
-				bg = '#b05c68'; // Very Slightly Negative (Soft Pinkish Red)
-			}
-		} else {
-			bg = '#787b86'; // Flat/Neutral (TradingView Slate Grey)
-			text = 'text-white/80';
-		}
-
-		if (isSelected) {
-			border = '#3b82f6';
-			shadow = '0 0 15px rgba(59, 130, 246, 0.5)';
-		}
-
-		return { background: bg, borderColor: border, boxShadow: shadow, textColor: text };
+		return {
+			background: bg,
+			borderColor: isSelected ? 'var(--color-accent)' : '',
+			boxShadow: '',
+			textColor: 'text-white'
+		};
 	}
 </script>
 
 <div
-	class="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-surface shadow-lg"
+	class="flex h-full flex-col overflow-hidden rounded-lg border border-border bg-surface shadow-sm"
 >
 	<!-- Control Bar: Search, Filters, and Sorting -->
 	<div
-		class="z-20 flex shrink-0 flex-col items-stretch justify-between gap-4 border-b border-border bg-surface/50 px-5 py-3.5 backdrop-blur-md sm:flex-row sm:items-center"
+		class="z-20 flex shrink-0 flex-col items-stretch justify-between gap-4 border-b border-border bg-surface px-5 py-3.5 sm:flex-row sm:items-center"
 	>
 		<div class="scrollbar-none flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
 			{#each categories as cat}
 				<button
 					onclick={() => (activeCategory = cat.id)}
-					class="cursor-pointer rounded-lg border px-4 py-2 text-xs font-bold whitespace-nowrap transition-all
+					class="cursor-pointer rounded-lg border px-4 py-2 text-xs font-bold whitespace-nowrap transition-colors
 					{activeCategory === cat.id
-						? 'scale-[1.02] border-accent bg-accent text-white shadow-md shadow-accent/20'
-						: 'border-border/60 bg-surface-2/60 text-text-dim hover:scale-[1.01] hover:border-text-dim/40 hover:text-text'}"
+						? 'border-accent bg-accent text-white'
+						: 'border-border/60 bg-surface-2/60 text-text-dim hover:border-text-dim/40 hover:text-text'}"
 				>
 					{cat.name}
 				</button>
@@ -682,7 +508,7 @@
 	</div>
 
 	<!-- Heatmap Container -->
-	<div class="relative min-h-[550px] flex-1 bg-gradient-to-b from-surface/20 to-surface-2/5 p-4">
+	<div class="relative min-h-[550px] flex-1 bg-surface-2/20 p-4">
 		{#if allPrices.length === 0}
 			<div class="absolute inset-0 flex flex-col items-center justify-center py-20 text-center">
 				<div
@@ -701,14 +527,14 @@
 			<div
 				bind:clientWidth={containerWidth}
 				bind:clientHeight={containerHeight}
-				class="absolute inset-0 h-full min-h-[500px] w-full overflow-hidden border-t border-l border-white bg-white select-none dark:border-[#1e222d] dark:bg-[#131722]"
+				class="absolute inset-0 h-full min-h-[500px] w-full overflow-hidden border-t border-l border-surface bg-surface select-none"
 			>
 				{#each computedTreeMap as node (node.id)}
 					{@const flash = flashMap.get(node.id)}
 					{@const cellStyle = getCellStyles(node.data.pct.value, false)}
 					<button
 						onclick={() => onselect(node.id)}
-						class="heatmap-cell absolute flex cursor-pointer flex-col items-center justify-center overflow-hidden border-r border-b border-white p-2 text-center transition-all duration-300 hover:z-30 dark:border-[#1e222d]
+						class="heatmap-cell absolute flex cursor-pointer flex-col items-center justify-center overflow-hidden border-r border-b border-surface p-2 text-center transition-all duration-300 hover:z-30
 						{flash === 'up' ? 'cell-flash-green' : flash === 'down' ? 'cell-flash-red' : ''}"
 						style="left: {node.x}px; top: {node.y}px; width: {node.w}px; height: {node.h}px; background: {cellStyle.background}; box-shadow: {cellStyle.boxShadow};"
 					>
@@ -892,50 +718,27 @@
 	.heatmap-cell {
 		border-radius: 0px;
 		transition:
-			transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1),
-			filter 0.2s ease,
-			box-shadow 0.2s ease;
+			filter 0.2s ease;
 		outline: none !important;
 	}
 
 	.heatmap-cell:hover {
-		transform: scale(1.015);
-		filter: brightness(1.15);
-		box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35) !important;
-		z-index: 50 !important;
+		filter: brightness(1.08);
+		z-index: 30;
 	}
 
-	/* Flashing outlines and brightness scaling on WebSocket updates */
-	@keyframes local-pulse-green {
+	/* Brief brightness lift on WebSocket updates — no neon outline. */
+	@keyframes local-pulse {
 		0% {
-			outline: 3px solid #089981;
-			outline-offset: -3px;
 			filter: brightness(1.25);
 		}
 		100% {
-			outline: 0px solid transparent;
-			outline-offset: -3px;
 			filter: brightness(1);
 		}
 	}
-	@keyframes local-pulse-red {
-		0% {
-			outline: 3px solid #f23645;
-			outline-offset: -3px;
-			filter: brightness(1.25);
-		}
-		100% {
-			outline: 0px solid transparent;
-			outline-offset: -3px;
-			filter: brightness(1);
-		}
-	}
-	.cell-flash-green {
-		animation: local-pulse-green 0.7s cubic-bezier(0.25, 1, 0.5, 1);
-		z-index: 40 !important;
-	}
+	.cell-flash-green,
 	.cell-flash-red {
-		animation: local-pulse-red 0.7s cubic-bezier(0.25, 1, 0.5, 1);
-		z-index: 40 !important;
+		animation: local-pulse 0.7s cubic-bezier(0.25, 1, 0.5, 1);
+		z-index: 20;
 	}
 </style>

@@ -2,7 +2,6 @@
 	import { resolve } from '$app/paths';
 	import { onMount, onDestroy } from 'svelte';
 	import { Moon, Sun } from 'lucide-svelte';
-	import { DISCORD_INVITE } from '$lib/config';
 	import {
 		startWebSocket,
 		stopWebSocket,
@@ -22,13 +21,10 @@
 	import CalendarTable from '$lib/components/CalendarTable.svelte';
 	import SentimentDashboard from '$lib/components/SentimentDashboard.svelte';
 	import OptionsDashboard from '$lib/components/OptionsDashboard.svelte';
-	import FeatureGrid from '$lib/components/FeatureGrid.svelte';
-	import CommandRef from '$lib/components/CommandRef.svelte';
-	import HeroMotion from '$lib/components/HeroMotion.svelte';
 	import logoUrl from '$lib/assets/logo.png';
 	import { reveal } from '$lib/actions/reveal';
 
-	let selectedSymbol = $state('SPX');
+	let selectedSymbol = $state('XAUUSD');
 	let viewMode = $state('chart');
 
 	let isDarkTheme = $state(false);
@@ -43,6 +39,10 @@
 	onMount(() => {
 		pageMounted = true;
 		if (typeof window !== 'undefined') {
+			const day = new Date().getUTCDay();
+			if (day === 0 || day === 6) {
+				selectedSymbol = 'BTCUSDT';
+			}
 			const storedTheme = localStorage.getItem('theme');
 			if (
 				storedTheme === 'dark' ||
@@ -110,7 +110,7 @@
 				<img
 					src={logoUrl}
 					alt="SLV"
-					class="h-11 w-11 shrink-0 object-contain transition-transform duration-300 group-hover:scale-105 md:h-12 md:w-12"
+					class="h-11 w-11 shrink-0 object-contain md:h-12 md:w-12"
 				/>
 
 				<div class="flex flex-col leading-none">
@@ -163,7 +163,7 @@
 				data-sveltekit-reload
 				target="_blank"
 				rel="noopener noreferrer"
-				class="hidden items-center gap-1.5 rounded-full border border-border bg-surface-2/60 px-3 py-1.5 text-xs font-semibold text-text-muted shadow-sm transition-all hover:border-text-dim/30 hover:bg-border/30 hover:text-text md:flex"
+				class="hidden items-center gap-1.5 rounded-full border border-border bg-surface-2/60 px-3 py-1.5 text-xs font-semibold text-text-muted transition-colors hover:border-text-dim/30 hover:bg-border/30 hover:text-text md:flex"
 			>
 				<svg
 					class="h-3.5 w-3.5"
@@ -185,7 +185,7 @@
 				data-sveltekit-reload
 				target="_blank"
 				rel="noopener noreferrer"
-				class="rounded-sm bg-accent px-3 py-2 text-xs font-semibold text-white transition-all hover:bg-accent-glow active:scale-95 sm:px-4 sm:text-sm"
+				class="rounded-sm bg-accent px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-accent-glow sm:px-4 sm:text-sm"
 			>
 				Portal
 			</a>
@@ -206,9 +206,6 @@
 		class="relative min-h-[calc(100vh-104px)] overflow-hidden bg-bg text-text transition-colors duration-300"
 	>
 		<div class="hero-glow pointer-events-none absolute inset-0"></div>
-
-		<!-- Subtle grid -->
-		<div class="hero-grid pointer-events-none absolute inset-0"></div>
 
 		<div
 			class="relative z-10 mx-auto grid min-h-[calc(100vh-104px)] w-full max-w-[1500px] grid-cols-1 items-center px-6 py-16 lg:grid-cols-[1fr_0.92fr] lg:px-16 xl:px-24"
@@ -239,7 +236,7 @@
 				<div class="mt-10">
 					<a
 						href="https://pia.wign.dev/"
-						class="group inline-flex items-center gap-3 rounded-sm bg-accent px-6 py-4 font-mono text-[11px] font-bold tracking-[0.13em] text-white shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:bg-accent-glow hover:shadow-xl active:scale-95"
+						class="group inline-flex items-center gap-3 rounded-sm bg-accent px-6 py-4 font-mono text-[11px] font-bold tracking-[0.13em] text-white transition-colors duration-200 hover:bg-accent-glow"
 					>
 						GET STARTED PORTAL
 						<span class="ml-1 transition-transform duration-200 group-hover:translate-x-1">→</span>
@@ -249,22 +246,20 @@
 
 			<!-- Right artwork -->
 			<div class="relative mt-12 flex h-[520px] items-center justify-center lg:mt-0 lg:h-[690px]">
-				<HeroMotion />
-
 				<div
-					class="group relative z-10 flex h-[500px] w-[500px] items-center justify-center max-lg:h-[440px] max-lg:w-[440px] max-sm:h-[350px] max-sm:w-[350px]"
+					class="relative z-10 flex h-[500px] w-[500px] items-center justify-center max-lg:h-[440px] max-lg:w-[440px] max-sm:h-[350px] max-sm:w-[350px]"
 				>
 					<img
 						src={logoUrl}
 						alt="SLV artwork"
-						class="relative z-10 max-h-[500px] w-[86%] object-contain drop-shadow-[0_24px_45px_rgba(120,72,0,0.18)] transition-transform duration-700 group-hover:scale-[1.025] group-hover:-rotate-1 dark:drop-shadow-[0_24px_55px_rgba(0,0,0,0.45)]"
+						class="relative z-10 max-h-[500px] w-[86%] object-contain"
 					/>
 				</div>
 
 				<div
 					class="absolute right-2 bottom-16 hidden font-mono text-[8px] tracking-[0.25em] text-text-dim lg:block"
 				>
-					Nodus Reasearch & Development
+					Nodus Research &amp; Development
 				</div>
 			</div>
 		</div>
@@ -277,15 +272,12 @@
 		class="relative overflow-hidden border-y border-border bg-surface-2/25 px-3 py-12 md:px-5 lg:px-8"
 		use:reveal={{ y: 40 }}
 	>
-		<div
-			class="pointer-events-none absolute top-0 right-0 -z-10 h-[800px] w-[800px] rounded-full bg-blue-500/5 blur-[120px]"
-		></div>
 		<div class="relative z-10 mx-auto flex w-full max-w-[1600px] flex-col">
 			<div class="mb-4 flex shrink-0 flex-col justify-between gap-3 sm:flex-row sm:items-center">
 				<div class="flex items-center gap-4">
 					<h2 class="text-2xl font-black tracking-tight text-text">Market Board</h2>
 					<span
-						class="rounded-md border border-accent/20 bg-accent/5 px-2.5 py-1 font-mono text-[11px] font-bold text-accent shadow-sm"
+						class="rounded-md border border-accent/20 bg-accent/5 px-2.5 py-1 font-mono text-[11px] font-bold text-accent"
 					>
 						{selectedSymbol}
 					</span>
@@ -320,7 +312,7 @@
 				>
 					<div class="min-h-0 min-w-0 space-y-4">
 						<div
-							class="overflow-hidden rounded-xl border border-border/80 bg-surface shadow-sm transition-shadow hover:shadow-md"
+							class="overflow-hidden rounded-lg border border-border bg-surface shadow-sm"
 						>
 							<PriceChart symbol={selectedSymbol} height={380} />
 						</div>
@@ -328,22 +320,22 @@
 							<WhyDidItMoveCard symbol={selectedSymbol} />
 							<div class="grid grid-cols-2 gap-3">
 								<div
-									class="overflow-hidden rounded-xl border border-border/80 bg-surface shadow-sm transition-all hover:border-border hover:shadow-md"
+									class="overflow-hidden rounded-lg border border-border bg-surface shadow-sm"
 								>
 									<PriceChart symbol="SPX" height={140} compact={true} />
 								</div>
 								<div
-									class="overflow-hidden rounded-xl border border-border/80 bg-surface shadow-sm transition-all hover:border-border hover:shadow-md"
+									class="overflow-hidden rounded-lg border border-border bg-surface shadow-sm"
 								>
 									<PriceChart symbol="XAUUSD" height={140} compact={true} />
 								</div>
 								<div
-									class="overflow-hidden rounded-xl border border-border/80 bg-surface shadow-sm transition-all hover:border-border hover:shadow-md"
+									class="overflow-hidden rounded-lg border border-border bg-surface shadow-sm"
 								>
 									<PriceChart symbol="BTCUSDT" height={140} compact={true} />
 								</div>
 								<div
-									class="overflow-hidden rounded-xl border border-border/80 bg-surface shadow-sm transition-all hover:border-border hover:shadow-md"
+									class="overflow-hidden rounded-lg border border-border bg-surface shadow-sm"
 								>
 									<PriceChart symbol="DXY" height={140} compact={true} />
 								</div>
@@ -351,14 +343,14 @@
 						</div>
 					</div>
 					<aside
-						class="min-w-0 overflow-hidden rounded-xl border border-border/80 bg-surface shadow-sm xl:sticky xl:top-[104px] xl:self-start"
+						class="min-w-0 overflow-hidden rounded-lg border border-border bg-surface shadow-sm xl:sticky xl:top-[104px] xl:self-start"
 					>
 						<MarketGrid selected={selectedSymbol} onselect={(sym) => (selectedSymbol = sym)} />
 					</aside>
 				</div>
 			{:else}
 				<div
-					class="animate-fade-in min-h-0 flex-1 overflow-hidden rounded-xl border border-border/80 bg-surface p-2 shadow-sm"
+					class="animate-fade-in min-h-0 flex-1 overflow-hidden rounded-lg border border-border bg-surface p-2 shadow-sm"
 				>
 					<MarketHeatmap
 						onselect={(sym) => {
@@ -411,7 +403,7 @@
 						<span class="text-sm font-medium text-text-muted">Real-time NLP Analysis</span>
 					</div>
 					<div
-						class="overflow-hidden rounded-xl border border-border/80 bg-surface shadow-sm transition-shadow hover:shadow-md"
+						class="overflow-hidden rounded-lg border border-border bg-surface shadow-sm"
 					>
 						<SentimentDashboard
 							forexItems={realtimeNewsStore.mergeForex($forexNews)}
@@ -432,7 +424,7 @@
 						</div>
 					</div>
 					<div
-						class="overflow-hidden rounded-xl border border-border/80 bg-surface shadow-sm transition-shadow hover:shadow-md"
+						class="overflow-hidden rounded-lg border border-border bg-surface shadow-sm"
 					>
 						<NewsFeed
 							title="Forex & Global"
@@ -461,7 +453,7 @@
 			</div>
 
 			<div
-				class="overflow-hidden rounded-xl border border-border/80 bg-surface shadow-sm transition-shadow hover:shadow-md"
+				class="overflow-hidden rounded-lg border border-border bg-surface shadow-sm"
 			>
 				<CalendarTable />
 			</div>

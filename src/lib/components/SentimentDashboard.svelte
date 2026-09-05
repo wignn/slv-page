@@ -153,10 +153,8 @@
 	function sentimentBadge(s: string | null): string {
 		if (!s) return 'bg-text-dim/10 text-text-dim border-text-dim/20';
 		const v = s.toLowerCase();
-		if (v === 'positive' || v === 'bullish')
-			return 'bg-green/10 text-green border-green/20 shadow-[0_0_8px_rgba(34,197,94,0.15)]';
-		if (v === 'negative' || v === 'bearish')
-			return 'bg-red/10 text-red border-red/20 shadow-[0_0_8px_rgba(239,68,68,0.15)]';
+		if (v === 'positive' || v === 'bullish') return 'bg-green/10 text-green border-green/20';
+		if (v === 'negative' || v === 'bearish') return 'bg-red/10 text-red border-red/20';
 		if (v === 'mixed' || v === 'neutral') return 'bg-amber/10 text-amber border-amber/20';
 		return 'bg-text-dim/10 text-text border-text-dim/20';
 	}
@@ -164,10 +162,8 @@
 	function sentimentDot(s: string | null): string {
 		if (!s) return 'bg-text-dim/50 border-border';
 		const v = s.toLowerCase();
-		if (v === 'positive' || v === 'bullish')
-			return 'bg-green border-green/30 shadow-[0_0_6px_rgba(34,197,94,0.4)]';
-		if (v === 'negative' || v === 'bearish')
-			return 'bg-red border-red/30 shadow-[0_0_6px_rgba(239,68,68,0.4)]';
+		if (v === 'positive' || v === 'bullish') return 'bg-green border-green/30';
+		if (v === 'negative' || v === 'bearish') return 'bg-red border-red/30';
 		if (v === 'mixed' || v === 'neutral') return 'bg-amber border-amber/30';
 		return 'bg-text-dim/50 border-border';
 	}
@@ -258,7 +254,7 @@
 				<!-- Indicator pointer pin -->
 				{#if forexStats.total > 0}
 					<div
-						class="cubic-bezier(0.175, 0.885, 0.32, 1.1) absolute top-1/2 h-4 w-1.5 -translate-y-1/2 rounded-full border border-surface bg-text shadow-[0_0_8px_rgba(0,0,0,0.3)] transition-all duration-1000"
+						class="absolute top-1/2 h-4 w-1.5 -translate-y-1/2 rounded-full border border-surface bg-text transition-all duration-1000"
 						style="left: calc({(forexStats.score + 1) * 50}% - 3px);"
 					></div>
 				{/if}
@@ -275,7 +271,7 @@
 			class="relative flex w-full max-w-[280px] flex-col items-center justify-center border-border/50 px-6 py-2 md:border-r md:border-l"
 		>
 			<div
-				class="relative flex flex-col items-center justify-center overflow-visible drop-shadow-md"
+				class="relative flex flex-col items-center justify-center overflow-visible"
 			>
 				<svg width="220" height="120" viewBox="0 0 220 120" class="overflow-visible">
 					<defs>
@@ -286,14 +282,7 @@
 							<stop offset="65%" stop-color="#4CD2B9" />
 							<stop offset="100%" stop-color="var(--color-green, #089981)" />
 						</linearGradient>
-						<filter id="glow">
-							<feGaussianBlur stdDeviation="2.5" result="coloredBlur" />
-							<feMerge>
-								<feMergeNode in="coloredBlur" />
-								<feMergeNode in="SourceGraphic" />
-							</feMerge>
-						</filter>
-					</defs>
+						</defs>
 
 					<path
 						d="M 25 110 A 85 85 0 0 1 195 110"
@@ -330,7 +319,7 @@
 						<path
 							d="M 108.5 110 L 110 16 L 111.5 110 Z"
 							fill="var(--color-text, #131722)"
-							filter="url(#glow)"
+							
 						/>
 					</g>
 				</svg>
@@ -383,7 +372,7 @@
 				<!-- Indicator pointer pin -->
 				{#if stockStats.total > 0}
 					<div
-						class="cubic-bezier(0.175, 0.885, 0.32, 1.1) absolute top-1/2 h-4 w-1.5 -translate-y-1/2 rounded-full border border-surface bg-text shadow-[0_0_8px_rgba(0,0,0,0.3)] transition-all duration-1000"
+						class="absolute top-1/2 h-4 w-1.5 -translate-y-1/2 rounded-full border border-surface bg-text transition-all duration-1000"
 						style="left: calc({(stockStats.score + 1) * 50}% - 3px);"
 					></div>
 				{/if}
@@ -399,26 +388,26 @@
 
 	<!-- Pill Summary Row -->
 	<div
-		class="mt-1 flex flex-wrap items-center justify-center gap-4 rounded-xl border border-border/60 bg-surface-2/30 px-5 py-3"
+		class="mt-1 flex flex-wrap items-center justify-center gap-3 rounded-lg border border-border/60 bg-surface px-4 py-2.5"
 	>
 		<div
-			class="flex items-center gap-2 rounded-lg border border-red/20 bg-red/10 px-3 py-1.5 text-xs shadow-sm transition-transform hover:scale-105"
+			class="flex items-center gap-2 rounded-md border border-red/20 bg-red/10 px-2.5 py-1 text-xs"
 		>
-			<span class="h-2 w-2 rounded-full bg-red shadow-[0_0_6px_rgba(239,68,68,0.5)]"></span>
+			<span class="h-2 w-2 rounded-full bg-red"></span>
 			<span class="font-bold text-text-muted">Fear:</span>
 			<span class="font-mono font-bold text-red">{stats.negative}</span>
 		</div>
 		<div
-			class="flex items-center gap-2 rounded-lg border border-text-dim/20 bg-text-dim/10 px-3 py-1.5 text-xs shadow-sm transition-transform hover:scale-105"
+			class="flex items-center gap-2 rounded-md border border-text-dim/20 bg-text-dim/10 px-2.5 py-1 text-xs"
 		>
 			<span class="h-2 w-2 rounded-full border border-text-dim/50 bg-text-dim"></span>
 			<span class="font-bold text-text-muted">Neutral:</span>
 			<span class="font-mono font-bold text-text">{stats.neutral}</span>
 		</div>
 		<div
-			class="flex items-center gap-2 rounded-lg border border-green/20 bg-green/10 px-3 py-1.5 text-xs shadow-sm transition-transform hover:scale-105"
+			class="flex items-center gap-2 rounded-md border border-green/20 bg-green/10 px-2.5 py-1 text-xs"
 		>
-			<span class="h-2 w-2 rounded-full bg-green shadow-[0_0_6px_rgba(34,197,94,0.5)]"></span>
+			<span class="h-2 w-2 rounded-full bg-green"></span>
 			<span class="font-bold text-text-muted">Greed:</span>
 			<span class="font-mono font-bold text-green">{stats.positive}</span>
 		</div>
@@ -434,7 +423,7 @@
 	<div class="mt-2 grid grid-cols-1 gap-5 lg:grid-cols-12">
 		<!-- Source Breakdown (4 cols) -->
 		<div
-			class="flex flex-col rounded-xl border border-border/80 bg-surface p-5 shadow-sm transition-shadow hover:shadow-md lg:col-span-4"
+			class="flex flex-col rounded-xl border border-border/80 bg-surface p-5 shadow-sm lg:col-span-4"
 		>
 			<div
 				class="mb-5 flex items-center justify-between border-b border-border/60 pb-3 text-xs font-bold tracking-wider text-text-muted uppercase"
@@ -495,7 +484,7 @@
 
 		<!-- Recently Analyzed (8 cols) -->
 		<div
-			class="flex flex-col rounded-xl border border-border/80 bg-surface p-5 shadow-sm transition-shadow hover:shadow-md lg:col-span-8"
+			class="flex flex-col rounded-xl border border-border/80 bg-surface p-5 shadow-sm lg:col-span-8"
 		>
 			<div
 				class="mb-5 flex items-center justify-between border-b border-border/60 pb-3 text-xs font-bold tracking-wider text-text-muted uppercase"

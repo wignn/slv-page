@@ -2,7 +2,7 @@
 	import { marketStore } from '$lib/stores/websocket.svelte';
 	import type { PriceData } from '$lib/types';
 
-	import { getLocalLogo } from '$lib/logo';
+	import { getSymbolMeta } from '$lib/symbol-meta';
 
 	interface Props {
 		selected: string;
@@ -61,173 +61,7 @@
 	}
 
 	function getSymbolDetails(itemOrSymbol: PriceData | string) {
-		const symbol = typeof itemOrSymbol === 'string' ? itemOrSymbol : itemOrSymbol.symbol;
-		const category =
-			typeof itemOrSymbol === 'string'
-				? getAssetCategory({ symbol, asset_type: '', price: 0 } as PriceData)
-				: getAssetCategory(itemOrSymbol);
-		const sym = symbol.toUpperCase();
-		let name = sym;
-		let badge = sym.substring(0, 4);
-		let badgeColor = 'bg-accent/10 text-accent border border-accent/20';
-		let unit =
-			category === 'forex'
-				? 'RATE'
-				: category === 'stocks'
-					? 'EQTY'
-					: category === 'indices'
-						? 'IDX'
-						: 'USD';
-		let format = (val: number) => formatPrice(val, category, sym);
-		let logo = { type: 'svg', url: '' };
-		let displaySymbol = sym;
-
-		if (sym === 'BTCUSDT') {
-			name = 'Bitcoin';
-			badge = 'BTC';
-			badgeColor = 'bg-[#F7931A]/10 text-[#F7931A] border border-[#F7931A]/20';
-			unit = 'USD';
-			format = (val: number) =>
-				val.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-			logo = { type: 'img', url: 'https://assets.coincap.io/assets/icons/btc@2x.png' };
-		} else if (sym === 'ETHUSDT') {
-			name = 'Ethereum';
-			badge = 'ETH';
-			badgeColor = 'bg-[#627EEA]/10 text-[#627EEA] border border-[#627EEA]/20';
-			unit = 'USD';
-			format = (val: number) =>
-				val.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-			logo = { type: 'img', url: 'https://assets.coincap.io/assets/icons/eth@2x.png' };
-		} else if (sym === 'SOLUSDT') {
-			name = 'Solana';
-			badge = 'SOL';
-			badgeColor = 'bg-[#14F195]/10 text-[#14F195] border border-[#14F195]/20';
-			unit = 'USD';
-			format = (val: number) => val.toFixed(2);
-			logo = { type: 'img', url: 'https://assets.coincap.io/assets/icons/sol@2x.png' };
-		} else if (sym === 'BNBUSDT') {
-			name = 'BNB';
-			badge = 'BNB';
-			badgeColor = 'bg-[#F3BA2F]/10 text-[#F3BA2F] border border-[#F3BA2F]/20';
-			unit = 'USD';
-			format = (val: number) => val.toFixed(1);
-			logo = { type: 'img', url: 'https://assets.coincap.io/assets/icons/bnb@2x.png' };
-		} else if (sym === 'PAXGUSDT') {
-			name = 'PAX Gold';
-			badge = 'PAXG';
-			displaySymbol = 'PAXG';
-			badgeColor = 'bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/20';
-			unit = 'USD';
-			format = (val: number) =>
-				val.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-			logo = { type: 'svg', url: '' };
-		} else if (sym === 'EURUSD') {
-			name = 'Euro / USD';
-			badge = 'EUR';
-			badgeColor = 'bg-[#003399]/10 text-[#003399] border border-[#003399]/20';
-			unit = 'RATE';
-			format = (val: number) => val.toFixed(5);
-			logo = { type: 'img', url: 'https://flagcdn.com/w80/eu.png' };
-		} else if (sym === 'GBPUSD') {
-			name = 'GBP / USD';
-			badge = 'GBP';
-			badgeColor = 'bg-[#C8102E]/10 text-[#C8102E] border border-[#C8102E]/20';
-			unit = 'RATE';
-			format = (val: number) => val.toFixed(5);
-			logo = { type: 'img', url: 'https://flagcdn.com/w80/gb.png' };
-		} else if (sym === 'USDJPY') {
-			name = 'USD / Yen';
-			badge = 'JPY';
-			badgeColor = 'bg-[#BC002D]/10 text-[#BC002D] border border-[#BC002D]/20';
-			unit = 'JPY';
-			format = (val: number) => val.toFixed(3);
-			logo = { type: 'img', url: 'https://flagcdn.com/w80/jp.png' };
-		} else if (sym === 'XAUUSD') {
-			name = 'Gold / USD';
-			badge = 'GOLD';
-			badgeColor = 'bg-[#FFD700]/10 text-[#FFD700] border border-[#FFD700]/20';
-			unit = 'USD';
-			format = (val: number) =>
-				val.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-		} else if (sym === 'SPX') {
-			name = 'S&P 500 Index';
-			badge = 'SPX';
-			badgeColor = 'bg-blue-600/10 text-blue-600 border border-blue-600/20';
-			unit = 'USD';
-			format = (val: number) =>
-				val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-		} else if (sym === 'IHSG') {
-			name = 'Jakarta Composite / IHSG';
-			badge = 'IHSG';
-			badgeColor = 'bg-red-600/10 text-red-500 border border-red-600/20';
-			unit = 'INDEX';
-			format = (val: number) =>
-				val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-		} else if (sym === 'DXY') {
-			name = 'US Dollar Index';
-			badge = 'DXY';
-			badgeColor = 'bg-emerald-600/10 text-emerald-600 border border-[#10B981]/20';
-			unit = 'RATE';
-			format = (val: number) => val.toFixed(3);
-		} else if (sym === 'WTI') {
-			name = 'WTI Crude Oil';
-			badge = 'WTI';
-			badgeColor = 'bg-orange-500/10 text-orange-500 border border-orange-500/20';
-			unit = 'USD';
-			format = (val: number) => val.toFixed(2);
-		} else if (category === 'stocks') {
-			name = `${sym} Equity`;
-			badge = sym.slice(0, 4);
-			badgeColor = 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20';
-			unit = 'USD';
-		} else if (category === 'indices') {
-			name = `${sym} Index`;
-			badge = sym.slice(0, 5);
-			badgeColor = 'bg-violet-500/10 text-violet-400 border border-violet-500/20';
-			unit = 'INDEX';
-		} else if (category === 'forex') {
-			name = sym.length === 6 ? `${sym.slice(0, 3)} / ${sym.slice(3)}` : sym;
-			badge = sym.slice(0, 3);
-			badgeColor = 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
-			unit = 'RATE';
-		}
-
-		// Prioritize local logo over any fallback URL defined above
-		const localLogoUrl = getLocalLogo(sym);
-		if (localLogoUrl) {
-			logo = { type: 'img', url: localLogoUrl };
-		}
-
-		return { name, badge, badgeColor, unit, format, logo, displaySymbol };
-	}
-
-	function getAssetCategory(item: PriceData): string {
-		const assetType = (item.asset_type ?? '').toLowerCase();
-		if (['stock', 'stocks', 'equity', 'saham'].includes(assetType)) return 'stocks';
-		if (['forex', 'fx', 'currency'].includes(assetType)) return 'forex';
-		if (['index', 'indices', 'global_index'].includes(assetType)) return 'indices';
-		if (['crypto', 'cryptocurrency'].includes(assetType)) return 'crypto';
-		if (['commodity', 'commodities', 'metal', 'energy'].includes(assetType)) return 'commodities';
-
-		const sym = item.symbol.toUpperCase();
-		if (sym.endsWith('USDT')) return 'crypto';
-		if (sym === 'XAUUSD' || sym.startsWith('XAU')) return 'commodities';
-		if (/^[A-Z]{6}$/.test(sym)) return 'forex';
-		return 'stocks';
-	}
-
-	function formatPrice(val: number, category: string, symbol: string): string {
-		if (category === 'crypto')
-			return val.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
-		if (category === 'stocks' || category === 'indices')
-			return val.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
-		if (category === 'forex') {
-			if (symbol.includes('JPY')) return val.toFixed(3);
-			if (symbol.includes('IDR'))
-				return val.toLocaleString(undefined, { maximumFractionDigits: 2 });
-			return val.toFixed(5);
-		}
-		return val.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 2 });
+		return getSymbolMeta(typeof itemOrSymbol === 'string' ? itemOrSymbol : itemOrSymbol.symbol);
 	}
 
 	let flashMap = $state<Map<string, 'up' | 'down'>>(new Map());
@@ -388,62 +222,19 @@
 							/>
 						</div>
 					{:else}
-						<div
-							class="flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-full border border-accent/20 bg-accent/10"
-						>
-							{#if p.symbol.toUpperCase() === 'XAUUSD'}
-								<svg
-									class="h-3.5 w-3.5"
-									viewBox="0 0 64 64"
-									fill="none"
-									xmlns="http://www.w3.org/2000/svg"
-								>
-									<path
-										d="M16 28 L48 28 L40 18 L24 18 Z"
-										fill="#FFD700"
-										stroke="#DAA520"
-										stroke-width="2"
-									/>
-									<path
-										d="M8 46 L36 46 L30 36 L14 36 Z"
-										fill="#FFD700"
-										stroke="#DAA520"
-										stroke-width="2"
-									/>
-									<path
-										d="M28 46 L56 46 L50 36 L34 36 Z"
-										fill="#FFD700"
-										stroke="#DAA520"
-										stroke-width="2"
-									/>
-								</svg>
-							{:else if p.symbol.toUpperCase() === 'SPX'}
-								<svg
-									class="h-3.5 w-3.5 text-blue-600"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									stroke-width="2.5"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-								>
-									<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
-									<polyline points="16 7 22 7 22 13"></polyline>
-								</svg>
-							{:else}
-								<svg
-									class="h-3.5 w-3.5 text-emerald-600"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									stroke-width="2.5"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-								>
-									<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
-									<polyline points="16 7 22 7 22 13"></polyline>
-								</svg>
-							{/if}
+						<div class="flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-full {details.badgeClass}">
+							<svg
+								class="h-3.5 w-3.5 text-accent"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2.5"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							>
+								<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+								<polyline points="16 7 22 7 22 13"></polyline>
+							</svg>
 						</div>
 					{/if}
 				</div>

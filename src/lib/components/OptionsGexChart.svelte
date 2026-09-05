@@ -65,7 +65,7 @@
 	}
 </script>
 
-<div class="flex flex-col rounded-lg border border-border bg-surface p-4 shadow-xs">
+<div class="flex flex-col rounded-lg border border-border bg-surface p-4 shadow-sm">
 	<!-- Header -->
 	<div class="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3">
 		<div>
@@ -76,23 +76,18 @@
 		<!-- Summary Badges & Legend -->
 		<div class="flex flex-wrap items-center gap-3 text-xs">
 			<div class="flex items-center gap-1.5">
-				<span class="h-2.5 w-2.5 rounded-xs bg-green"></span>
-				<span class="text-text-muted">Call GEX:</span>
-				<span class="font-medium text-green">{formatGex(totalCallGex)}</span>
+				<span class="h-2.5 w-2.5 rounded-full bg-green"></span>
+				<span class="text-text-muted">Call GEX</span>
+				<span class="font-mono font-medium text-text">{formatGex(totalCallGex)}</span>
 			</div>
 			<div class="flex items-center gap-1.5">
-				<span class="h-2.5 w-2.5 rounded-xs bg-red"></span>
-				<span class="text-text-muted">Put GEX:</span>
-				<span class="font-medium text-red">{formatGex(totalPutGex)}</span>
+				<span class="h-2.5 w-2.5 rounded-full bg-red"></span>
+				<span class="text-text-muted">Put GEX</span>
+				<span class="font-mono font-medium text-text">{formatGex(totalPutGex)}</span>
 			</div>
 			<div class="flex items-center gap-1.5 border-l border-border pl-3">
-				<span class="text-text-muted">Net:</span>
-				<span
-					class="font-semibold"
-					class:text-green={netGex > 0}
-					class:text-red={netGex < 0}
-					class:text-text={netGex === 0}
-				>
+				<span class="text-text-muted">Net</span>
+				<span class="font-mono font-semibold text-text">
 					{formatGex(netGex)}
 				</span>
 			</div>
@@ -109,7 +104,7 @@
 		</div>
 	{:else}
 		<div class="relative mt-4 flex flex-col gap-1 overflow-x-auto" style="height: {height}px">
-			<div class="flex h-full min-w-[600px] flex-1 items-end gap-1 pb-6 pt-4">
+			<div class="flex h-full min-w-[600px] flex-1 items-end gap-2 pt-4 pb-6">
 				{#each sortedItems as item (item.strike)}
 					{@const callHeightPct = (Math.abs(item.call_gex) / maxGex) * 100}
 					{@const putHeightPct = (Math.abs(item.put_gex) / maxGex) * 100}
@@ -118,38 +113,49 @@
 						Math.abs(item.strike - underlyingPrice) ===
 							Math.min(...sortedItems.map((i) => Math.abs(i.strike - underlyingPrice)))}
 
-					<div class="group relative flex flex-1 flex-col items-center justify-end h-full">
+					<div class="group relative flex h-full flex-1 flex-col items-center justify-end">
 						<!-- Hover Tooltip -->
 						<div
-							class="pointer-events-none absolute bottom-full mb-2 hidden z-10 rounded-md border border-border bg-surface-2 p-2 text-xs shadow-md group-hover:block"
+							class="pointer-events-none absolute bottom-full z-10 mb-2 hidden rounded-md border border-border bg-surface p-2 text-xs shadow-sm group-hover:block"
 						>
-							<div class="font-bold text-text">Strike: ${formatStrike(item.strike)}</div>
-							<div class="text-green">Call GEX: {formatGex(item.call_gex)}</div>
-							<div class="text-red">Put GEX: {formatGex(item.put_gex)}</div>
-							<div class="border-t border-border mt-1 pt-1 font-medium text-text">
-								Total: {formatGex(item.total_gex)}
+							<div class="font-bold text-text">Strike ${formatStrike(item.strike)}</div>
+							<div class="mt-1 flex items-center gap-1.5">
+								<span class="h-2 w-2 rounded-full bg-green"></span>
+								<span class="text-text-muted">Call</span>
+								<span class="ml-auto font-mono text-text">{formatGex(item.call_gex)}</span>
+							</div>
+							<div class="mt-0.5 flex items-center gap-1.5">
+								<span class="h-2 w-2 rounded-full bg-red"></span>
+								<span class="text-text-muted">Put</span>
+								<span class="ml-auto font-mono text-text">{formatGex(item.put_gex)}</span>
+							</div>
+							<div class="mt-1 border-t border-border pt-1 font-medium text-text">
+								Total {formatGex(item.total_gex)}
 							</div>
 						</div>
 
 						<!-- Underlying ATM marker indicator -->
 						{#if isAtm}
 							<div
-								class="absolute -top-3 left-1/2 -translate-x-1/2 rounded bg-accent px-1 text-[10px] font-bold text-surface whitespace-nowrap"
+								class="absolute -top-3 left-1/2 -translate-x-1/2 rounded bg-accent px-1 text-[10px] font-bold whitespace-nowrap text-white"
 							>
 								ATM ${underlyingPrice}
 							</div>
 						{/if}
 
 						<!-- Bars Container -->
-						<div class="flex w-full items-end justify-center gap-0.5" style="height: 80%">
+						<div
+							class="mx-auto flex w-full max-w-[24px] items-end justify-center gap-[2px]"
+							style="height: 80%"
+						>
 							<!-- Call Bar -->
 							<div
-								class="w-1/2 rounded-t-xs bg-green/80 transition-all group-hover:bg-green"
+								class="w-1/2 rounded-t bg-green transition-opacity group-hover:opacity-80"
 								style="height: {callHeightPct}%"
 							></div>
 							<!-- Put Bar -->
 							<div
-								class="w-1/2 rounded-t-xs bg-red/80 transition-all group-hover:bg-red"
+								class="w-1/2 rounded-t bg-red transition-opacity group-hover:opacity-80"
 								style="height: {putHeightPct}%"
 							></div>
 						</div>

@@ -4,7 +4,8 @@
 	import { marketStore } from '$lib/stores/websocket.svelte';
 	import type { PriceData } from '$lib/types';
 	import { apiFetch } from '$lib/api';
-	import { getLocalLogo } from '$lib/logo';
+	import { getChartTheme, isDarkMode } from '$lib/chart-theme';
+	import { getSymbolMeta } from '$lib/symbol-meta';
 
 	interface Props {
 		symbol: string;
@@ -41,92 +42,6 @@
 		if (resolution === '15m') return 15 * 60;
 		if (resolution === '1h') return 60 * 60;
 		return 60;
-	}
-
-	function getSymbolMeta(sym: string) {
-		const upper = sym.toUpperCase();
-		let name = upper;
-		let badge = upper.substring(0, 3);
-		let badgeColor = 'bg-accent/10 text-accent';
-		let format = (val: number) => val.toFixed(5);
-		let logo = { type: 'img', url: '' };
-		let displaySymbol = upper;
-
-		if (upper === 'BTCUSDT') {
-			name = 'Bitcoin';
-			badge = 'BTC';
-			badgeColor = 'bg-[#F7931A]/10 text-[#F7931A] border border-[#F7931A]/20';
-			format = (val) =>
-				`$${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-			logo = { type: 'img', url: 'https://assets.coincap.io/assets/icons/btc@2x.png' };
-		} else if (upper === 'ETHUSDT') {
-			name = 'Ethereum';
-			badge = 'ETH';
-			badgeColor = 'bg-[#627EEA]/10 text-[#627EEA] border border-[#627EEA]/20';
-			format = (val) =>
-				`$${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-			logo = { type: 'img', url: 'https://assets.coincap.io/assets/icons/eth@2x.png' };
-		} else if (upper === 'SOLUSDT') {
-			name = 'Solana';
-			badge = 'SOL';
-			badgeColor = 'bg-[#14F195]/10 text-[#14F195] border border-[#14F195]/20';
-			format = (val) => `$${val.toFixed(2)}`;
-			logo = { type: 'img', url: 'https://assets.coincap.io/assets/icons/sol@2x.png' };
-		} else if (upper === 'BNBUSDT') {
-			name = 'BNB';
-			badge = 'BNB';
-			badgeColor = 'bg-[#F3BA2F]/10 text-[#F3BA2F] border border-[#F3BA2F]/20';
-			format = (val) => `$${val.toFixed(2)}`;
-			logo = { type: 'img', url: 'https://assets.coincap.io/assets/icons/bnb@2x.png' };
-		} else if (upper === 'PAXGUSDT') {
-			name = 'PAX Gold';
-			badge = 'PAXG';
-			displaySymbol = 'PAXG';
-			badgeColor = 'bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/20';
-			format = (val) =>
-				`$${val.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}`;
-			logo = { type: 'svg', url: '' };
-		} else if (upper === 'EURUSD') {
-			name = 'Euro / US Dollar';
-			badge = 'EUR';
-			badgeColor = 'bg-[#003399]/10 text-[#003399] border border-[#003399]/20';
-			format = (val) => val.toFixed(5);
-			logo = { type: 'img', url: 'https://flagcdn.com/w80/eu.png' };
-		} else if (upper === 'GBPUSD') {
-			name = 'Pound Sterling / US Dollar';
-			badge = 'GBP';
-			badgeColor = 'bg-[#C8102E]/10 text-[#C8102E] border border-[#C8102E]/20';
-			format = (val) => val.toFixed(5);
-			logo = { type: 'img', url: 'https://flagcdn.com/w80/gb.png' };
-		} else if (upper === 'USDJPY') {
-			name = 'US Dollar / Japanese Yen';
-			badge = 'JPY';
-			badgeColor = 'bg-[#BC002D]/10 text-[#BC002D] border border-[#BC002D]/20';
-			format = (val) => val.toFixed(3);
-			logo = { type: 'img', url: 'https://flagcdn.com/w80/jp.png' };
-		} else if (upper === 'XAUUSD') {
-			name = 'Gold Spot / US Dollar';
-			badge = 'GOLD';
-			badgeColor = 'bg-[#FFD700]/10 text-[#FFD700] border border-[#FFD700]/20';
-			format = (val) =>
-				`$${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-		} else if (upper === 'SPX') {
-			name = 'S&P 500 Index';
-			badge = 'SPX';
-			badgeColor = 'bg-blue-600/10 text-blue-600 border border-blue-600/20';
-			format = (val) =>
-				val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-		} else if (upper === 'DXY') {
-			name = 'US Dollar Index';
-			badge = 'DXY';
-			badgeColor = 'bg-emerald-600/10 text-emerald-600 border border-emerald-600/20';
-			format = (val) => val.toFixed(3);
-		}
-
-		const localLogoUrl = getLocalLogo(upper);
-		if (localLogoUrl) logo = { type: 'img', url: localLogoUrl };
-
-		return { name, badge, badgeColor, format, logo, displaySymbol };
 	}
 
 	let meta = $derived(getSymbolMeta(symbol));
@@ -238,29 +153,16 @@
 	function updateChartColors() {
 		if (!areaSeries || !chart) return;
 
-		const isDark = document.documentElement.classList.contains('dark');
-		const gridColor = isDark ? '#3a3730' : '#d5cec1';
-		const textColor = isDark ? '#b9b2a7' : '#5f5b53';
-		const bgColor = isDark ? '#191916' : '#fbfaf7';
+		const theme = getChartTheme(isDarkMode());
 
 		chart.applyOptions({
-			layout: { background: { color: bgColor }, textColor },
-			grid: { vertLines: { color: gridColor }, horzLines: { color: gridColor } }
+			layout: { background: { color: theme.background }, textColor: theme.textColor },
+			grid: { vertLines: { color: theme.gridColor }, horzLines: { color: theme.gridColor } }
 		});
 
-		const colorLine = direction === 'up' ? '#2d9a68' : direction === 'down' ? '#d95c58' : '#d97724';
-		const colorTop =
-			direction === 'up'
-				? 'rgba(45,154,104,0.28)'
-				: direction === 'down'
-					? 'rgba(217,92,88,0.28)'
-					: 'rgba(217,119,36,0.28)';
-		const colorBottom =
-			direction === 'up'
-				? 'rgba(45,154,104,0.0)'
-				: direction === 'down'
-					? 'rgba(217,92,88,0.0)'
-					: 'rgba(217,119,36,0.0)';
+		const colorLine = direction === 'up' ? theme.up : direction === 'down' ? theme.down : theme.neutral;
+		const colorTop = theme.areaFillTop(colorLine);
+		const colorBottom = theme.areaFillBottom(colorLine);
 
 		areaSeries.applyOptions({ lineColor: colorLine, topColor: colorTop, bottomColor: colorBottom });
 	}
@@ -268,23 +170,20 @@
 	function initChart() {
 		if (!chartContainer) return;
 
-		const isDark = document.documentElement.classList.contains('dark');
-		const gridColor = isDark ? '#3a3730' : '#d5cec1';
-		const textColor = isDark ? '#b9b2a7' : '#5f5b53';
-		const bgColor = isDark ? '#191916' : '#fbfaf7';
+		const theme = getChartTheme(isDarkMode());
 
 		chart = createChart(chartContainer, {
 			width: chartContainer.clientWidth,
 			height,
 			layout: {
-				background: { color: bgColor },
-				textColor,
-				fontFamily: "'Inter', sans-serif",
+				background: { color: theme.background },
+				textColor: theme.textColor,
+				fontFamily: "'DM Sans', system-ui, sans-serif",
 				attributionLogo: false
 			},
 			grid: {
-				vertLines: { visible: !compact, color: gridColor, style: 2 },
-				horzLines: { visible: !compact, color: gridColor, style: 2 }
+				vertLines: { visible: !compact, color: theme.gridColor },
+				horzLines: { visible: !compact, color: theme.gridColor }
 			},
 			rightPriceScale: {
 				borderVisible: false,
@@ -419,9 +318,7 @@
 </script>
 
 <!-- Template tidak berubah sama sekali -->
-<div
-	class="animate-fade-in flex flex-col overflow-hidden rounded-lg border border-border bg-surface shadow-sm"
->
+<div class="flex flex-col">
 	{#if compact}
 		<div class="flex items-center justify-between border-b border-border bg-surface px-4 py-2.5">
 			<div class="flex items-center gap-2">
@@ -436,49 +333,19 @@
 						/>
 					</div>
 				{:else}
-					<div
-						class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-accent/20 bg-accent/10"
-					>
-						{#if symbol.toUpperCase() === 'XAUUSD'}
-							<svg
-								class="h-4 w-4"
-								viewBox="0 0 64 64"
-								fill="none"
-								xmlns="http://www.w3.org/2000/svg"
-							>
-								<path
-									d="M16 28 L48 28 L40 18 L24 18 Z"
-									fill="#FFD700"
-									stroke="#DAA520"
-									stroke-width="2"
-								/>
-								<path
-									d="M8 46 L36 46 L30 36 L14 36 Z"
-									fill="#FFD700"
-									stroke="#DAA520"
-									stroke-width="2"
-								/>
-								<path
-									d="M28 46 L56 46 L50 36 L34 36 Z"
-									fill="#FFD700"
-									stroke="#DAA520"
-									stroke-width="2"
-								/>
-							</svg>
-						{:else}
-							<svg
-								class="h-4 w-4 text-accent"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2.5"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							>
-								<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
-								<polyline points="16 7 22 7 22 13"></polyline>
-							</svg>
-						{/if}
+					<div class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full {meta.badgeClass}">
+						<svg
+							class="h-4 w-4 text-accent"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2.5"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						>
+							<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+							<polyline points="16 7 22 7 22 13"></polyline>
+						</svg>
 					</div>
 				{/if}
 				<span
@@ -524,49 +391,19 @@
 						/>
 					</div>
 				{:else}
-					<div
-						class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-accent/20 bg-accent/10"
-					>
-						{#if symbol.toUpperCase() === 'XAUUSD'}
-							<svg
-								class="h-6 w-6"
-								viewBox="0 0 64 64"
-								fill="none"
-								xmlns="http://www.w3.org/2000/svg"
-							>
-								<path
-									d="M16 28 L48 28 L40 18 L24 18 Z"
-									fill="#FFD700"
-									stroke="#DAA520"
-									stroke-width="2"
-								/>
-								<path
-									d="M8 46 L36 46 L30 36 L14 36 Z"
-									fill="#FFD700"
-									stroke="#DAA520"
-									stroke-width="2"
-								/>
-								<path
-									d="M28 46 L56 46 L50 36 L34 36 Z"
-									fill="#FFD700"
-									stroke="#DAA520"
-									stroke-width="2"
-								/>
-							</svg>
-						{:else}
-							<svg
-								class="h-6 w-6 text-accent"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2.5"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							>
-								<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
-								<polyline points="16 7 22 7 22 13"></polyline>
-							</svg>
-						{/if}
+					<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full {meta.badgeClass}">
+						<svg
+							class="h-6 w-6 text-accent"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2.5"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						>
+							<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+							<polyline points="16 7 22 7 22 13"></polyline>
+						</svg>
 					</div>
 				{/if}
 				<div>

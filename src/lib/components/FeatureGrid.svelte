@@ -62,7 +62,7 @@
 			>
 				Powerful Capabilities
 			</div>
-			<h2 class="text-4xl font-black tracking-tight text-text md:text-5xl">What Winyx Does</h2>
+			<h2 class="text-4xl font-black tracking-tight text-text md:text-5xl">What SLV Does</h2>
 			<p class="mx-auto mt-4 max-w-xl text-base leading-relaxed text-text-muted">
 				Every feature runs in real-time. No delays. No polls. Direct stream from the source straight
 				to your Discord.
@@ -73,7 +73,7 @@
 			{#each features as f, i (f.title)}
 				<div
 					use:reveal={{ delay: i * 100, y: 30 }}
-					class="group relative overflow-hidden rounded-2xl border border-border/80 bg-surface/80 p-7 backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-accent/30 hover:bg-surface hover:shadow-xl hover:shadow-accent/5"
+					class="group relative overflow-hidden rounded-2xl border border-border/80 bg-surface/80 p-7 backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-accent/30 hover:bg-surface hover:shadow-md"
 				>
 					<!-- Subtle inner glow on hover -->
 					<div

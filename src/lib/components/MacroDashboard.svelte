@@ -523,8 +523,7 @@
 										x2="192"
 										y2="34"
 										stroke="currentColor"
-										stroke-opacity="0.15"
-										stroke-dasharray="2 3"
+										stroke-opacity="0.12"
 									/><path
 										d={historyPath}
 										fill="none"

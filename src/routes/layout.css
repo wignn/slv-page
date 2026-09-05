@@ -35,10 +35,7 @@
 	--text-dim: #8e8a81;
 	--hero-glow: rgba(210, 112, 32, 0.14);
 	--hero-glow-soft: rgba(210, 112, 32, 0.06);
-	--hero-grid: rgba(23, 23, 22, 0.075);
-	--hero-ray: rgba(23, 23, 22, 0.34);
-	--hero-scanline: rgba(23, 23, 22, 0.14);
-	--hero-orb: rgba(224, 149, 51, 0.13);
+	--shadow-card: 0 1px 2px rgba(23, 23, 22, 0.05);
 }
 
 :root.dark {
@@ -53,10 +50,7 @@
 	--text-dim: #847d72;
 	--hero-glow: rgba(255, 179, 0, 0.13);
 	--hero-glow-soft: rgba(255, 179, 0, 0.05);
-	--hero-grid: rgba(255, 255, 255, 0.035);
-	--hero-ray: rgba(255, 255, 255, 0.34);
-	--hero-scanline: rgba(255, 255, 255, 0.2);
-	--hero-orb: rgba(251, 191, 36, 0.1);
+	--shadow-card: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 * {
@@ -178,17 +172,6 @@ body {
 		transform: translateX(-50%);
 	}
 }
-@keyframes glow-pulse {
-	0%,
-	100% {
-		opacity: 0.3;
-		transform: scale(1);
-	}
-	50% {
-		opacity: 0.6;
-		transform: scale(1.05);
-	}
-}
 @keyframes float {
 	0%,
 	100% {
@@ -196,16 +179,6 @@ body {
 	}
 	50% {
 		transform: translateY(-10px);
-	}
-}
-@keyframes message-pop {
-	0% {
-		opacity: 0;
-		transform: translateY(10px) scale(0.98);
-	}
-	100% {
-		opacity: 1;
-		transform: translateY(0) scale(1);
 	}
 }
 
@@ -258,23 +231,6 @@ body {
 .font-mono {
 	font-family: var(--font-mono);
 }
-.text-gradient {
-	background: linear-gradient(135deg, var(--color-accent), var(--color-blue));
-	-webkit-background-clip: text;
-	-webkit-text-fill-color: transparent;
-	background-clip: text;
-}
 .hero-glow {
 	background: radial-gradient(circle at 72% 44%, var(--hero-glow) 0%, var(--hero-glow-soft) 22%, transparent 50%);
-}
-.hero-grid {
-	background-image: linear-gradient(to right, var(--hero-grid) 1px, transparent 1px),
-		linear-gradient(to bottom, var(--hero-grid) 1px, transparent 1px);
-	background-size: 64px 64px;
-}
-.hero-rays {
-	background: repeating-conic-gradient(from 0deg, var(--hero-ray) 0deg 0.6deg, transparent 0.6deg 5.5deg);
-}
-.hero-scanlines {
-	background: repeating-linear-gradient(-9deg, var(--hero-scanline) 0 1px, transparent 1px 7px);
 }

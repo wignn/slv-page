@@ -40,9 +40,9 @@
 		if (!s) return 'bg-text-dim/50 border-border';
 		const v = s.toLowerCase();
 		if (v === 'positive' || v === 'bullish')
-			return 'bg-green border-green/30 shadow-[0_0_8px_rgba(34,197,94,0.4)]';
+			return 'bg-green border-green/30';
 		if (v === 'negative' || v === 'bearish')
-			return 'bg-red border-red/30 shadow-[0_0_8px_rgba(239,68,68,0.4)]';
+			return 'bg-red border-red/30';
 		if (v === 'mixed' || v === 'neutral') return 'bg-amber border-amber/30';
 		return 'bg-text-dim/50 border-border';
 	}

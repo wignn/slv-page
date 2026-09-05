@@ -36,18 +36,18 @@
 	);
 	let moveTone = $derived(
 		data?.move?.direction === 'up'
-			? 'text-green drop-shadow-[0_0_8px_rgba(34,197,94,0.3)]'
+			? 'text-green'
 			: data?.move?.direction === 'down'
-				? 'text-red drop-shadow-[0_0_8px_rgba(239,68,68,0.3)]'
+				? 'text-red'
 				: 'text-text'
 	);
 	let confidenceClass = $derived(confidenceTone(confidenceLabel));
 
 	function confidenceTone(confidence: string | undefined) {
 		if (confidence === 'high')
-			return 'border-green/30 bg-green/10 text-green shadow-[0_0_10px_rgba(34,197,94,0.15)]';
+			return 'border-green/30 bg-green/10 text-green';
 		if (confidence === 'medium')
-			return 'border-amber/30 bg-amber/10 text-amber shadow-[0_0_10px_rgba(245,158,11,0.15)]';
+			return 'border-amber/30 bg-amber/10 text-amber';
 		return 'border-border/80 bg-surface-2 text-text-muted';
 	}
 

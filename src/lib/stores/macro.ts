@@ -13,10 +13,11 @@ import type {
 const initialState: MacroState = {
 	loading: false,
 	yieldCurve: null,
+	scrapedBondCurve: null,
 	fearGreed: null,
 	fearGreedComponents: null,
 	fearGreedHistory: null,
-	errors: { yieldCurve: null, fearGreed: null, history: null },
+	errors: { yieldCurve: null, scrapedBondCurve: null, fearGreed: null, history: null },
 	lastFetchedAt: null
 };
 
@@ -186,7 +187,7 @@ export async function fetchMacroData() {
 		return {
 			...state,
 			loading: true,
-			errors: { yieldCurve: null, fearGreed: null, history: null }
+			errors: { yieldCurve: null, scrapedBondCurve: null, fearGreed: null, history: null }
 		};
 	});
 
@@ -202,7 +203,7 @@ export async function fetchMacroData() {
 	const next: MacroState = {
 		...previousState,
 		loading: false,
-		errors: { yieldCurve: null, fearGreed: null, history: null },
+		errors: { yieldCurve: null, scrapedBondCurve: null, fearGreed: null, history: null },
 		lastFetchedAt: new Date().toISOString()
 	};
 
